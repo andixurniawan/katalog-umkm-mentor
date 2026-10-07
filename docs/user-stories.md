@@ -96,4 +96,4 @@ Sebagai pengunjung, saya ingin memasang katalog di layar HP seperti aplikasi. Ik
 
 Sebagai admin, saya ingin membuat deskripsi produk secara otomatis dengan AI (Gemini API) dari nama dan kategori produk.
 
-Catatan: bonus US-07, US-08, dan US-09 hanya dihitung jika aksinya terlindungi login.
+Catatan: bonus US-08, US-09, dan US-10 hanya dihitung jika aksinya terlindungi login.
