@@ -3,9 +3,14 @@ import Tombol from "@/components/Tombol";
 
 // Dipakai untuk tambah produk (US-07) dan ubah produk (US-08). Keduanya bonus di jalur offline.
 // Nama field sama dengan kolom tabel "produk".
-export default function FormProduk({ produk = {}, labelTombol }) {
+export default function FormProduk({ produk = {}, labelTombol, action, state, isPending }) {
   return (
-    <form className="flex max-w-xl flex-col gap-4">
+    <form action={action} encType="multipart/form-data" className="flex max-w-xl flex-col gap-4">
+      {state?.error && (
+        <p className="rounded-lg bg-bahaya/10 p-3 text-sm font-medium text-bahaya">
+          {state.error}
+        </p>
+      )}
       <Input label="Nama produk" name="nama" defaultValue={produk.nama} required />
       <Input
         label="Harga (Rp)"
@@ -17,14 +22,22 @@ export default function FormProduk({ produk = {}, labelTombol }) {
       />
       <Input label="Kategori" name="kategori" defaultValue={produk.kategori} />
       <Input
-        label="Link foto"
+        label="Upload foto produk (disimpan ke Supabase Storage)"
+        name="foto_file"
+        type="file"
+        accept="image/*"
+      />
+      <Input
+        label="Atau link/URL foto (opsional jika tidak upload file)"
         name="foto_url"
         placeholder="https://... atau /produk/nama-file.svg"
         defaultValue={produk.foto_url}
       />
       <Input label="Deskripsi" name="deskripsi" textarea defaultValue={produk.deskripsi} />
       <div className="flex gap-3">
-        <Tombol type="submit">{labelTombol}</Tombol>
+        <Tombol type="submit" disabled={isPending}>
+          {isPending ? "Memproses..." : labelTombol}
+        </Tombol>
         <Tombol href="/admin" varian="garis">
           Batal
         </Tombol>
