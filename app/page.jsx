@@ -1,12 +1,29 @@
 import KartuProduk from "@/components/KartuProduk";
-import CatatanBelumAktif from "@/components/CatatanBelumAktif";
-import { produkContoh } from "@/lib/data-contoh";
 import { toko } from "@/lib/toko";
+import { createPublicClient } from "@/lib/supabase/server";
 
-// US-01: halaman ini masih memakai data contoh.
-// Tugas peserta: ambil daftar produk dari tabel "produk" di Supabase, di sisi server.
-export default function HalamanKatalog() {
-  const daftarProduk = produkContoh;
+export const dynamic = "force-dynamic";
+
+export default async function HalamanKatalog() {
+  const supabase = createPublicClient();
+  let daftarProduk = null;
+  let pesanError = null;
+
+  if (!supabase) {
+    pesanError = "Gagal terhubung ke database. Pastikan SUPABASE_URL dan SUPABASE_SECRET_KEY sudah diatur.";
+  } else {
+    const { data, error } = await supabase
+      .from("produk")
+      .select("*")
+      .order("id", { ascending: true });
+
+    if (error) {
+      console.error("Gagal mengambil data produk dari Supabase:", error);
+      pesanError = "Gagal mengambil data produk dari database.";
+    } else {
+      daftarProduk = data;
+    }
+  }
 
   return (
     <>
@@ -22,14 +39,21 @@ export default function HalamanKatalog() {
         <h2 id="judul-produk" className="text-xl font-bold">
           Produk kami
         </h2>
-        <CatatanBelumAktif>
-          Masih data contoh. Sambungkan ke database: lihat US-01 di docs/user-stories.md.
-        </CatatanBelumAktif>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-          {daftarProduk.map((produk) => (
-            <KartuProduk key={produk.id} produk={produk} />
-          ))}
-        </div>
+        {pesanError ? (
+          <p className="py-8 text-center text-bahaya">
+            {pesanError}
+          </p>
+        ) : daftarProduk && daftarProduk.length > 0 ? (
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+            {daftarProduk.map((produk) => (
+              <KartuProduk key={produk.id} produk={produk} />
+            ))}
+          </div>
+        ) : (
+          <p className="py-8 text-center text-teks-lembut">
+            Belum ada produk
+          </p>
+        )}
       </section>
     </>
   );
