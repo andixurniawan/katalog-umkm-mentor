@@ -70,7 +70,19 @@ Tidak ada perbaikan.
 
 ## Debugging dan fitur bonus
 
+### US-07 List produk (Bonus)
+
+**Prompt:**
+saja ganti US-07 tadi jadi US-08. saya udah update docs/user-stories.md dan PROMPTS.md. sekarang kerjakan US-07 yang telah saya update.
+
+**Hasil:**
+Halaman `/admin` (`app/admin/page.jsx`) diperbarui untuk mengambil seluruh data daftar produk dari tabel `produk` di database Supabase secara server-side (Server Component) dan menampilkannya pada `TabelProduk`. Jika tabel kosong atau terjadi error, pesan yang sesuai akan ditampilkan.
+
+**Perbaikan:**
+Tidak ada perbaikan.
+
 ### US-08 Tambah produk (Bonus)
+
 
 **Prompt:**
 baca file /Users/andix/work/Business/raghadan/code/katalog-umkm-mentor/docs/user-stories.md. kerjakan US-08
