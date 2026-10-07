@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createServerAuthClient, createPublicClient } from "@/lib/supabase/server";
 
 export async function loginAction(prevState, formData) {
@@ -141,6 +142,8 @@ export async function createProductAction(prevState, formData) {
     return { error: "Gagal menyimpan produk: " + error.message };
   }
 
+  revalidatePath("/admin");
+  revalidatePath("/");
   redirect("/admin");
 }
 
@@ -225,5 +228,38 @@ export async function updateProductAction(prevState, formData) {
     return { error: "Gagal menyimpan perubahan produk: " + error.message };
   }
 
+  revalidatePath("/admin");
+  revalidatePath("/");
+  redirect("/admin");
+}
+
+export async function deleteProductAction(formData) {
+  const supabaseAuth = await createServerAuthClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabaseAuth.auth.getUser();
+
+  if (userError || !user) {
+    return { error: "Anda harus login terlebih dahulu." };
+  }
+
+  const id = formData.get("id");
+  if (!id) {
+    return { error: "ID produk tidak valid." };
+  }
+
+  const { error } = await supabaseAuth
+    .from("produk")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error("Gagal menghapus produk:", error.message);
+    return { error: "Gagal menghapus produk: " + error.message };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/");
   redirect("/admin");
 }

@@ -123,6 +123,18 @@ Halaman `/admin/produk/[id]/ubah` mengambil data lama produk berdasarkan ID dari
 **Perbaikan:**
 Tidak ada perbaikan.
 
+### US-10 Hapus produk (Bonus)
+
+**Prompt:**
+lanjutkan US-10
+
+**Hasil:**
+Tombol "Hapus" pada tabel produk di `/admin` dihubungkan ke `TombolHapus` yang meminta konfirmasi browser sebelum menghapus. Jika disetujui, Server Action `deleteProductAction` di `app/admin/actions.js` memverifikasi sesi admin dan menghapus baris produk dari database Supabase sebelum menyegarkan halaman.
+
+**Perbaikan:**
+Tidak ada perbaikan.
+
+
 
 
 
