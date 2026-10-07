@@ -112,5 +112,17 @@ Form di `/admin/produk/baru` terhubung dengan `createProductAction`. Foto yang d
 **Perbaikan:**
 Tidak ada perbaikan.
 
+### US-09 Ubah produk (Bonus)
+
+**Prompt:**
+lanjut kerjakan US-09
+
+**Hasil:**
+Halaman `/admin/produk/[id]/ubah` mengambil data lama produk berdasarkan ID dari database Supabase secara server-side. Form terhubung dengan Server Action `updateProductAction` di `app/admin/actions.js` yang memvalidasi input, mendukung upload foto opsional ke Supabase Storage, dan menyimpan perubahan produk ke database sebelum mengalihkan pengguna kembali ke `/admin`. `CatatanBelumAktif` berhasil dihapus.
+
+**Perbaikan:**
+Tidak ada perbaikan.
+
+
 
 

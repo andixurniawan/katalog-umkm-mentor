@@ -1,15 +1,29 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import NavAdmin from "@/components/NavAdmin";
-import FormProduk from "@/components/FormProduk";
-import CatatanBelumAktif from "@/components/CatatanBelumAktif";
-import { cariProdukContoh } from "@/lib/data-contoh";
+import { createServerAuthClient } from "@/lib/supabase/server";
+import FormUbahProduk from "./FormUbahProduk";
 
-// US-08 (bonus di jalur offline): ubah produk.
+export const dynamic = "force-dynamic";
+
 export default async function HalamanUbahProduk({ params }) {
   const { id } = await params;
-  const produk = cariProdukContoh(id);
+  const supabase = await createServerAuthClient();
 
-  if (!produk) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/admin/login");
+  }
+
+  const { data: produk, error } = await supabase
+    .from("produk")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error || !produk) {
     notFound();
   }
 
@@ -17,8 +31,7 @@ export default async function HalamanUbahProduk({ params }) {
     <div className="flex flex-col gap-6 py-8">
       <NavAdmin />
       <h1 className="text-2xl font-extrabold">Ubah produk</h1>
-      <CatatanBelumAktif>Simpan perubahan belum berfungsi: lihat US-08.</CatatanBelumAktif>
-      <FormProduk produk={produk} labelTombol="Simpan perubahan" />
+      <FormUbahProduk produk={produk} />
     </div>
   );
 }

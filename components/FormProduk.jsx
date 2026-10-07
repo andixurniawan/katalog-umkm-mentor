@@ -1,11 +1,12 @@
 import Input from "@/components/Input";
 import Tombol from "@/components/Tombol";
 
-// Dipakai untuk tambah produk (US-07) dan ubah produk (US-08). Keduanya bonus di jalur offline.
+// Dipakai untuk tambah produk (US-08) dan ubah produk (US-09). Keduanya bonus di jalur offline.
 // Nama field sama dengan kolom tabel "produk".
 export default function FormProduk({ produk = {}, labelTombol, action, state, isPending }) {
   return (
     <form action={action} encType="multipart/form-data" className="flex max-w-xl flex-col gap-4">
+      {produk?.id && <input type="hidden" name="id" value={produk.id} />}
       {state?.error && (
         <p className="rounded-lg bg-bahaya/10 p-3 text-sm font-medium text-bahaya">
           {state.error}
