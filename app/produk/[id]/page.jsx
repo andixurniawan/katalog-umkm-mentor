@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import KartuProduk from "@/components/KartuProduk";
+import GaleriFoto from "@/components/GaleriFoto";
 import TombolWhatsApp from "@/components/TombolWhatsApp";
 import { formatRupiah } from "@/lib/format";
 import { createPublicClient } from "@/lib/supabase/server";
@@ -45,11 +46,7 @@ export default async function HalamanDetailProduk({ params }) {
   return (
     <div className="py-8 md:py-12">
       <article className="grid gap-8 md:grid-cols-2">
-        <img
-          src={produk.foto_url}
-          alt={produk.nama}
-          className="aspect-square w-full rounded-2xl border border-garis bg-permukaan object-cover"
-        />
+        <GaleriFoto fotoUrl={produk.foto_url} nama={produk.nama} />
         <div className="flex flex-col gap-4">
           <Link
             href="/"
