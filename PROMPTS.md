@@ -292,9 +292,50 @@ Halaman detail produk (`app/produk/[id]/page.jsx`) diperbarui dengan bagian "Pro
 **Perbaikan:**
 Tidak ada perbaikan.
 
+## US-18 Galeri foto produk
 
+**Prompt:**
+Sebagai pengunjung, saya ingin melihat beberapa foto satu produk, supaya saya tahu bentuk produknya dari berbagai sisi.
 
+Bernilai 10 poin.
 
+Kriteria selesai:
+
+- Satu produk bisa punya lebih dari satu foto. (4 poin)
+- Halaman detail menampilkan galeri dengan foto utama dan gambar kecil. (3 poin)
+- Pengunjung bisa berganti foto, dan produk dengan satu foto tetap tampil normal. (3 poin)
+
+**Hasil:**
+- Kolom `foto_url` mendukung beberapa URL yang dipisahkan koma atau baris baru.
+- Dibuat `components/GaleriFoto.jsx` (client component) yang menampilkan foto utama besar dan thumbnail di bawahnya; klik thumbnail mengganti foto utama.
+- Jika hanya satu foto, galeri tetap tampil normal tanpa thumbnail.
+- `app/produk/[id]/page.jsx` menggunakan `GaleriFoto` menggantikan `<img>` langsung.
+- `components/KartuProduk.jsx` diperbarui untuk mengambil foto pertama dari URL yang dipisahkan.
+
+**Perbaikan:**
+Tidak ada perbaikan.
+
+## US-19 Stok produk
+
+**Prompt:**
+Sebagai pengunjung, saya ingin tahu produk yang habis, supaya saya tidak memesan produk yang tidak ada.
+
+Bernilai 5 poin.
+
+Kriteria selesai:
+
+- Produk punya status atau jumlah stok di database. (2 poin)
+- Produk yang habis diberi penanda "Habis" dan tombol pesan WhatsApp dinonaktifkan atau disembunyikan. (3 poin)
+
+**Hasil:**
+- `docs/schema.sql` diperbarui dengan migrasi menambahkan kolom `stok integer default null` pada tabel `produk`. `NULL` = tidak dilacak, `0` = habis, positif = tersedia.
+- `components/FormProduk.jsx` ditambahkan input stok (opsional) di antara Kategori dan foto upload.
+- `app/admin/actions.js` — `createProductAction` dan `updateProductAction` keduanya membaca dan menyimpan nilai stok.
+- `components/KartuProduk.jsx` menampilkan badge merah "Habis" dan gambar di-grayscale ketika `stok === 0`.
+- `components/TombolWhatsApp.jsx` — ketika `stok === 0`, semua kontrol varian & jumlah disembunyikan dan digantikan pesan "Produk ini sedang tidak tersedia." dengan tombol "Stok habis" yang dinonaktifkan.
+
+**Perbaikan:**
+Tidak ada perbaikan.
 
 
 

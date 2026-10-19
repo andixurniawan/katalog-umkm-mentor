@@ -10,6 +10,8 @@ export default function TombolWhatsApp({ produk }) {
   const [jumlah, setJumlah] = useState(1);
   const [varian, setVarian] = useState("");
 
+  const isHabis = produk.stok === 0;
+
   const jumlahAngka = Math.max(1, Number(jumlah) || 1);
   const hargaTotal = produk.harga * jumlahAngka;
 
@@ -34,6 +36,22 @@ export default function TombolWhatsApp({ produk }) {
     "Ukuran Sedang",
     "Ukuran Besar",
   ];
+
+  if (isHabis) {
+    return (
+      <div className="flex flex-col gap-4 rounded-xl border border-garis bg-permukaan/30 p-4 sm:p-5">
+        <p className="text-center text-sm font-medium text-teks-lembut">
+          Produk ini sedang tidak tersedia.
+        </p>
+        <button
+          disabled
+          className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-lg bg-permukaan px-5 py-3 font-semibold text-teks-lembut"
+        >
+          Stok habis
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-garis bg-permukaan/30 p-4 sm:p-5">

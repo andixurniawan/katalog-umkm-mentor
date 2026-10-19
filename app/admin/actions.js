@@ -85,6 +85,8 @@ export async function createProductAction(prevState, formData) {
   let foto_url = formData.get("foto_url")?.toString().trim();
   const deskripsi = formData.get("deskripsi")?.toString().trim();
   const fotoFile = formData.get("foto_file");
+  const stokRaw = formData.get("stok")?.toString().trim();
+  const stok = stokRaw !== "" && stokRaw != null ? parseInt(stokRaw, 10) : null;
 
   if (!nama || isNaN(harga) || harga < 0) {
     return { error: "Nama dan harga produk (minimal 0) wajib diisi." };
@@ -134,6 +136,7 @@ export async function createProductAction(prevState, formData) {
       kategori: kategori || null,
       foto_url: foto_url || null,
       deskripsi: deskripsi || null,
+      stok: stok !== null && !isNaN(stok) ? stok : null,
     },
   ]);
 
@@ -170,6 +173,8 @@ export async function updateProductAction(prevState, formData) {
   let foto_url = formData.get("foto_url")?.toString().trim();
   const deskripsi = formData.get("deskripsi")?.toString().trim();
   const fotoFile = formData.get("foto_file");
+  const stokRaw = formData.get("stok")?.toString().trim();
+  const stok = stokRaw !== "" && stokRaw != null ? parseInt(stokRaw, 10) : null;
 
   if (!nama || isNaN(harga) || harga < 0) {
     return { error: "Nama dan harga produk (minimal 0) wajib diisi." };
@@ -220,6 +225,7 @@ export async function updateProductAction(prevState, formData) {
       kategori: kategori || null,
       foto_url: foto_url || null,
       deskripsi: deskripsi || null,
+      stok: stok !== null && !isNaN(stok) ? stok : null,
     })
     .eq("id", id);
 

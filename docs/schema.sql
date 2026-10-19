@@ -88,3 +88,9 @@ select
 from kategori k
 cross join lateral unnest(k.daftar) with ordinality as p (nama, ke)
 where not exists (select 1 from public.produk where deskripsi like 'Contoh untuk uji paginasi%');
+
+-- 5. Kolom stok untuk US-19 (Status stok)
+-- Jalankan ini jika kolom stok belum ada di tabel produk.
+-- NULL berarti stok tidak dilacak; 0 berarti habis; angka positif berarti tersedia.
+alter table public.produk
+  add column if not exists stok integer default null check (stok is null or stok >= 0);

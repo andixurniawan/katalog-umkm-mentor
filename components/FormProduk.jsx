@@ -69,6 +69,23 @@ export default function FormProduk({ produk = {}, labelTombol, action, state, is
         value={kategori}
         onChange={(e) => setKategori(e.target.value)}
       />
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="stok" className="text-sm font-semibold">
+          Stok{" "}
+          <span className="font-normal text-teks-lembut">
+            (kosongkan jika tidak dilacak; isi 0 untuk menandai habis)
+          </span>
+        </label>
+        <input
+          id="stok"
+          name="stok"
+          type="number"
+          min="0"
+          defaultValue={produk.stok ?? ""}
+          placeholder="Contoh: 10 (kosong = tidak dilacak)"
+          className="w-full rounded-lg border border-garis bg-latar px-3 py-2.5 text-base text-teks placeholder:text-teks-lembut focus:border-utama focus:outline-none"
+        />
+      </div>
       <Input
         label="Upload foto produk (disimpan ke Supabase Storage)"
         name="foto_file"
