@@ -220,6 +220,33 @@ Fitur pembuatan deskripsi otomatis menggunakan Gemini API berhasil diimplementas
 **Perbaikan:**
 Tidak ada perbaikan.
 
+## US-15 Urutkan produk (Bonus lanjutan)
+
+**Prompt:**
+Sebagai pengunjung, saya ingin mengurutkan produk, supaya cepat menemukan yang murah atau yang terbaru.
+
+Bernilai 5 poin.
+
+Kriteria selesai:
+
+- Ada pilihan urutan: termurah, termahal, terbaru. (3 poin)
+- Urutan diterapkan saat mengambil data (query), bukan hanya di tampilan. (2 poin)
+
+**Hasil:**
+Halaman katalog (`app/page.jsx`) diperbarui dengan fitur pengurutan produk:
+- Disediakan kontrol pilihan urutan: dropdown `<select name="urutan">` dan tombol pill navigasi cepat untuk opsi `Bawaan`, `Termurah`, `Termahal`, dan `Terbaru`.
+- Pengurutan langsung diterapkan pada query database Supabase di sisi server:
+  - `termurah`: `.order("harga", { ascending: true })`
+  - `termahal`: `.order("harga", { ascending: false })`
+  - `terbaru`: `.order("created_at", { ascending: false })`
+  - `bawaan`: `.order("id", { ascending: true })`
+- Pilihan urutan tersimpan di URL query parameter (`urutan` / `sort`) dan terintegrasi harmonis dengan filter kategori serta pencarian nama produk tanpa saling menghilangkan parameter.
+- Teks status hasil dan tombol reset filter/urutan disediakan untuk memudahkan navigasi pengunjung.
+
+**Perbaikan:**
+Tidak ada perbaikan.
+
+
 
 
 

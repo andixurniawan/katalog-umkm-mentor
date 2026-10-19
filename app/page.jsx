@@ -15,6 +15,7 @@ export default async function HalamanKatalog({ searchParams }) {
     kategoriParam && kategoriParam.toLowerCase() !== "semua"
   );
   const kategoriTerpilih = isKategoriAktif ? kategoriParam : "";
+  const urutan = (sp?.urutan || sp?.sort || "").toLowerCase().trim();
 
   const supabase = createPublicClient();
   let daftarProduk = null;
@@ -40,7 +41,7 @@ export default async function HalamanKatalog({ searchParams }) {
       ).sort((a, b) => a.localeCompare(b, "id"));
     }
 
-    // Query produk dengan filter kategori dan pencarian nama
+    // Query produk dengan filter kategori, pencarian nama, dan urutan langsung di query database
     let query = supabase.from("produk").select("*");
 
     if (kategoriTerpilih) {
@@ -51,7 +52,23 @@ export default async function HalamanKatalog({ searchParams }) {
       query = query.ilike("nama", `%${kataKunci}%`);
     }
 
-    const { data, error } = await query.order("id", { ascending: true });
+    if (urutan === "termurah") {
+      query = query
+        .order("harga", { ascending: true })
+        .order("id", { ascending: true });
+    } else if (urutan === "termahal") {
+      query = query
+        .order("harga", { ascending: false })
+        .order("id", { ascending: true });
+    } else if (urutan === "terbaru") {
+      query = query
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false });
+    } else {
+      query = query.order("id", { ascending: true });
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Gagal mengambil data produk dari Supabase:", error);
@@ -61,19 +78,29 @@ export default async function HalamanKatalog({ searchParams }) {
     }
   }
 
-  function buatTautanKategori(kat) {
+  function buatTautan({ kategoriBaru, urutanBaru }) {
     const params = new URLSearchParams();
+
+    const kat =
+      kategoriBaru !== undefined ? kategoriBaru : kategoriTerpilih;
     if (kat) {
       params.set("kategori", kat);
     }
+
+    const urt = urutanBaru !== undefined ? urutanBaru : urutan;
+    if (urt) {
+      params.set("urutan", urt);
+    }
+
     if (kataKunci) {
       params.set("q", kataKunci);
     }
+
     const qs = params.toString();
     return qs ? `/?${qs}` : "/";
   }
 
-  const adaFilter = Boolean(kataKunci || kategoriTerpilih);
+  const adaFilter = Boolean(kataKunci || kategoriTerpilih || urutan);
 
   return (
     <>
@@ -118,6 +145,22 @@ export default async function HalamanKatalog({ searchParams }) {
             {kategoriTerpilih && (
               <input type="hidden" name="kategori" value={kategoriTerpilih} />
             )}
+            <div className="flex flex-col gap-1.5 sm:w-44">
+              <label htmlFor="urutan" className="text-sm font-semibold">
+                Urutan
+              </label>
+              <select
+                id="urutan"
+                name="urutan"
+                defaultValue={urutan}
+                className="h-[46px] w-full rounded-lg border border-garis bg-latar px-3 py-2.5 text-base text-teks focus:border-utama focus:outline-none"
+              >
+                <option value="">Bawaan</option>
+                <option value="termurah">Termurah</option>
+                <option value="termahal">Termahal</option>
+                <option value="terbaru">Terbaru</option>
+              </select>
+            </div>
             <div className="flex gap-2">
               <Tombol type="submit" className="h-[46px] flex-1 sm:flex-none">
                 Cari
@@ -140,7 +183,7 @@ export default async function HalamanKatalog({ searchParams }) {
                 Kategori:
               </span>
               <Link
-                href={buatTautanKategori("")}
+                href={buatTautan({ kategoriBaru: "" })}
                 className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors ${
                   !kategoriTerpilih
                     ? "bg-utama text-white"
@@ -155,7 +198,7 @@ export default async function HalamanKatalog({ searchParams }) {
                 return (
                   <Link
                     key={kat}
-                    href={buatTautanKategori(kat)}
+                    href={buatTautan({ kategoriBaru: kat })}
                     className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors ${
                       isActive
                         ? "bg-utama text-white"
@@ -168,6 +211,33 @@ export default async function HalamanKatalog({ searchParams }) {
               })}
             </div>
           )}
+
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-semibold text-teks-lembut">
+              Urutkan:
+            </span>
+            {[
+              { id: "", label: "Bawaan" },
+              { id: "termurah", label: "Termurah" },
+              { id: "termahal", label: "Termahal" },
+              { id: "terbaru", label: "Terbaru" },
+            ].map((item) => {
+              const isActive = urutan === item.id;
+              return (
+                <Link
+                  key={item.id || "bawaan"}
+                  href={buatTautan({ urutanBaru: item.id })}
+                  className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors ${
+                    isActive
+                      ? "bg-utama text-white"
+                      : "border border-garis bg-latar text-teks hover:border-utama hover:text-utama"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
 
           {adaFilter && daftarProduk && daftarProduk.length > 0 && (
             <p className="text-sm text-teks-lembut">
@@ -184,6 +254,22 @@ export default async function HalamanKatalog({ searchParams }) {
                   {" "}
                   dengan kata kunci{" "}
                   <strong className="text-teks">"{kataKunci}"</strong>
+                </>
+              )}
+              {urutan && (
+                <>
+                  {" "}
+                  (urutan:{" "}
+                  <strong className="text-teks">
+                    {urutan === "termurah"
+                      ? "Termurah"
+                      : urutan === "termahal"
+                      ? "Termahal"
+                      : urutan === "terbaru"
+                      ? "Terbaru"
+                      : urutan}
+                  </strong>
+                  )
                 </>
               )}
             </p>
@@ -208,7 +294,9 @@ export default async function HalamanKatalog({ searchParams }) {
                 ? `Tidak ditemukan produk dengan kata kunci "${kataKunci}" di kategori "${kategoriTerpilih}".`
                 : kataKunci
                 ? `Tidak ditemukan produk dengan kata kunci "${kataKunci}".`
-                : `Belum ada produk di kategori "${kategoriTerpilih}".`}
+                : kategoriTerpilih
+                ? `Belum ada produk di kategori "${kategoriTerpilih}".`
+                : "Tidak ada produk yang sesuai dengan filter atau urutan yang dipilih."}
             </p>
             <div className="mt-4">
               <Tombol href="/" varian="garis">
