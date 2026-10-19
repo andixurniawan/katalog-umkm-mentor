@@ -270,6 +270,29 @@ Fitur paginasi produk berhasil diimplementasikan di katalog publik (`app/page.js
 **Perbaikan:**
 Tidak ada perbaikan.
 
+## US-17 Produk terkait di halaman detail (Bonus lanjutan)
+
+**Prompt:**
+Sebagai pengunjung, saya ingin melihat produk lain yang mirip, supaya saya punya pilihan lain.
+
+Bernilai 5 poin.
+
+Kriteria selesai:
+
+- Halaman detail menampilkan beberapa produk lain dari kategori yang sama. (3 poin)
+- Produk yang sedang dibuka tidak ikut ditampilkan, dan data diambil dari database. (2 poin)
+
+**Hasil:**
+Halaman detail produk (`app/produk/[id]/page.jsx`) diperbarui dengan bagian "Produk terkait":
+- Mengambil produk lain dari kategori yang sama langsung dari database Supabase (`.eq("kategori", produk.kategori)`).
+- Mengecualikan produk yang sedang dibuka (`.neq("id", produkId)`).
+- Menampilkan hingga 4 produk terkait menggunakan kartu produk standar (`KartuProduk`) dalam tata letak grid responsif.
+- Bagian produk terkait hanya tampil jika terdapat produk lain dalam kategori tersebut.
+
+**Perbaikan:**
+Tidak ada perbaikan.
+
+
 
 
 
