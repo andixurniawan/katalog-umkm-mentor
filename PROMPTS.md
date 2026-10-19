@@ -134,6 +134,95 @@ Tombol "Hapus" pada tabel produk di `/admin` dihubungkan ke `TombolHapus` yang m
 **Perbaikan:**
 Tidak ada perbaikan.
 
+## US-11 Filter kategori atau pencarian (Bonus)
+
+**Prompt:**
+baca file ini /Users/andix/work/Business/raghadan/code/katalog-umkm-mentor/docs/user-stories.md
+
+kerjakan US11
+
+**Hasil:**
+Halaman katalog (`app/page.jsx`) diperbarui dengan fitur penyaringan produk berdasarkan kategori dan pencarian nama produk:
+- Daftar pilihan kategori diambil secara dinamis dari produk yang ada di database Supabase.
+- Pengunjung dapat memilih kategori ("Semua" atau kategori spesifik) dengan tautan badge/pill yang otomatis menandai kategori aktif.
+- Pengunjung dapat mencari nama produk dengan form pencarian (mendukung tombol Cari, Enter, dan input search).
+- Pencarian menggunakan query `ilike` di Supabase secara case-insensitive di sisi server.
+- Fitur filter kategori dan pencarian nama produk dapat digunakan secara bersamaan tanpa saling menghilangkan parameter URL.
+- Disediakan tombol "Reset" dan tautan "Hapus semua filter" untuk kembali ke seluruh katalog produk.
+- Jika hasil pencarian/filter kosong, halaman menampilkan pesan yang jelas dan informatif beserta tombol untuk melihat semua produk.
+
+**Perbaikan:**
+Tidak ada perbaikan.
+
+## US-12 Pilih jumlah atau varian (Bonus)
+
+**Prompt:**
+lanjutkan ke US12
+
+**Hasil:**
+Komponen pemesanan WhatsApp (`components/TombolWhatsApp.jsx`) pada halaman detail produk diperbarui dengan dukungan interaktif:
+- Pemilihan jumlah produk (`jumlah`): kontrol tombol tambah/kurang (+ / -) dan input angka langsung dengan batas minimal 1 pcs.
+- Pemilihan varian produk (`varian`): input teks bebas disertai opsi rekomendasi cepat (badge pill) dan HTML datalist untuk berbagai jenis produk (misal: Original, Pedas, Manis, Ukuran Kecil/Sedang/Besar).
+- Penghitungan subtotal harga secara dinamis sesuai jumlah yang dipilih.
+- Pesan otomatis WhatsApp diperbarui secara real-time menyertakan nama produk, varian yang dipilih, jumlah produk, dan harga satuan/total dalam format Rupiah.
+
+**Perbaikan:**
+Tidak ada perbaikan.
+
+## US-13 PWA (Bonus)
+
+**Prompt:**
+Sebagai pengunjung, saya ingin memasang katalog di layar HP seperti aplikasi. Ikon tersedia di `public/icons`.
+
+Bernilai 10 poin.
+
+Kriteria selesai:
+
+- Ada web app manifest yang ditautkan di halaman.
+- Ikon tersedia di `public/icons` dan dirujuk di manifest.
+- Katalog bisa di-install ke layar utama HP.
+
+**Hasil:**
+Konfigurasi Progressive Web App (PWA) berhasil ditambahkan:
+- Dibuat Web App Manifest melalui `app/manifest.js` (Next.js App Router) dan `public/manifest.json`.
+- Manifest mengonfigurasi `name`, `short_name`, `start_url`, `display: "standalone"`, `theme_color`, dan `background_color`.
+- Ikon dari `public/icons` (`icon-192.png` dan `icon-512.png`) dirujuk dengan benar di manifest dengan format dan ukuran yang sesuai.
+- Di `app/layout.jsx`, ditambahkan tautan manifest otomatis, viewport `themeColor`, ikon Apple Touch, dan meta tag pendukung PWA untuk mobile/iOS/Android agar katalog dapat diinstal ke layar utama HP.
+- Konfigurasi rewrite pada `next.config.mjs` untuk mendukung akses ke `/manifest.json` dan `/manifest.webmanifest`.
+
+**Perbaikan:**
+Tidak ada perbaikan.
+
+## US-14 Deskripsi produk dibuat AI (Bonus)
+
+**Prompt:**
+### US-14 Deskripsi produk dibuat AI
+
+Sebagai admin, saya ingin membuat deskripsi produk secara otomatis dengan AI (Gemini API) dari nama dan kategori produk.
+
+Bernilai 10 poin.
+
+Kriteria selesai:
+
+- Admin bisa membuat deskripsi otomatis dari nama dan kategori produk. (4 poin)
+- Gemini API dipanggil dari server, kunci tidak ada di browser. (3 poin)
+- Hasilnya mengisi kolom deskripsi sebelum produk disimpan. (3 poin)
+
+Catatan: bonus US-08, US-09, dan US-10 hanya dihitung jika aksinya terlindungi login.
+
+**Hasil:**
+Fitur pembuatan deskripsi otomatis menggunakan Gemini API berhasil diimplementasikan:
+- Dibuat Server Action `generateDescriptionAction` di `app/admin/actions.js` yang memverifikasi autentikasi admin di server sebelum memproses permintaan.
+- Gemini API dipanggil secara server-side menggunakan `GEMINI_API_KEY` (atau `GOOGLE_API_KEY`) dari environment variable sehingga kunci API aman dan tidak pernah terekspos ke browser.
+- Disediakan tombol "✨ Buat dengan AI" di samping label deskripsi pada form produk (`components/FormProduk.jsx`).
+- Ketika ditekan, Server Action menerima nama dan kategori produk, lalu menghasilkan deskripsi yang menarik dan otomatis mengisi kolom textarea deskripsi secara langsung sehingga admin dapat meninjau atau menyuntingnya sebelum produk disimpan.
+
+**Perbaikan:**
+Tidak ada perbaikan.
+
+
+
+
 
 
 

@@ -1,9 +1,45 @@
+"use client";
+
+import { useState } from "react";
 import Input from "@/components/Input";
 import Tombol from "@/components/Tombol";
+import { generateDescriptionAction } from "@/app/admin/actions";
 
 // Dipakai untuk tambah produk (US-08) dan ubah produk (US-09). Keduanya bonus di jalur offline.
 // Nama field sama dengan kolom tabel "produk".
 export default function FormProduk({ produk = {}, labelTombol, action, state, isPending }) {
+  const [nama, setNama] = useState(produk?.nama || "");
+  const [kategori, setKategori] = useState(produk?.kategori || "");
+  const [deskripsi, setDeskripsi] = useState(produk?.deskripsi || "");
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [aiError, setAiError] = useState(null);
+
+  const handleBuatDeskripsiAi = async () => {
+    setAiError(null);
+    if (!nama.trim()) {
+      setAiError("Nama produk wajib diisi terlebih dahulu untuk membuat deskripsi dengan AI.");
+      return;
+    }
+
+    setIsGeneratingAi(true);
+    try {
+      const res = await generateDescriptionAction({
+        nama: nama.trim(),
+        kategori: kategori.trim(),
+      });
+
+      if (res?.error) {
+        setAiError(res.error);
+      } else if (res?.deskripsi) {
+        setDeskripsi(res.deskripsi);
+      }
+    } catch (err) {
+      setAiError(err.message || "Terjadi kesalahan saat memanggil AI.");
+    } finally {
+      setIsGeneratingAi(false);
+    }
+  };
+
   return (
     <form action={action} encType="multipart/form-data" className="flex max-w-xl flex-col gap-4">
       {produk?.id && <input type="hidden" name="id" value={produk.id} />}
@@ -12,7 +48,13 @@ export default function FormProduk({ produk = {}, labelTombol, action, state, is
           {state.error}
         </p>
       )}
-      <Input label="Nama produk" name="nama" defaultValue={produk.nama} required />
+      <Input
+        label="Nama produk"
+        name="nama"
+        value={nama}
+        onChange={(e) => setNama(e.target.value)}
+        required
+      />
       <Input
         label="Harga (Rp)"
         name="harga"
@@ -21,7 +63,12 @@ export default function FormProduk({ produk = {}, labelTombol, action, state, is
         defaultValue={produk.harga}
         required
       />
-      <Input label="Kategori" name="kategori" defaultValue={produk.kategori} />
+      <Input
+        label="Kategori"
+        name="kategori"
+        value={kategori}
+        onChange={(e) => setKategori(e.target.value)}
+      />
       <Input
         label="Upload foto produk (disimpan ke Supabase Storage)"
         name="foto_file"
@@ -34,7 +81,35 @@ export default function FormProduk({ produk = {}, labelTombol, action, state, is
         placeholder="https://... atau /produk/nama-file.svg"
         defaultValue={produk.foto_url}
       />
-      <Input label="Deskripsi" name="deskripsi" textarea defaultValue={produk.deskripsi} />
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center justify-between">
+          <label htmlFor="deskripsi" className="text-sm font-semibold">
+            Deskripsi
+          </label>
+          <button
+            type="button"
+            onClick={handleBuatDeskripsiAi}
+            disabled={isGeneratingAi}
+            className="inline-flex items-center gap-1.5 rounded-md border border-garis bg-permukaan px-2.5 py-1 text-xs font-semibold text-utama transition-colors hover:border-utama hover:bg-latar disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isGeneratingAi ? "Membuat deskripsi..." : "✨ Buat dengan AI"}
+          </button>
+        </div>
+        {aiError && (
+          <p className="rounded-md bg-bahaya/10 px-2.5 py-1.5 text-xs font-medium text-bahaya">
+            {aiError}
+          </p>
+        )}
+        <textarea
+          id="deskripsi"
+          name="deskripsi"
+          rows={4}
+          value={deskripsi}
+          onChange={(e) => setDeskripsi(e.target.value)}
+          placeholder="Tulis deskripsi produk atau buat otomatis menggunakan AI di atas..."
+          className="w-full rounded-lg border border-garis bg-latar px-3 py-2.5 text-base text-teks placeholder:text-teks-lembut focus:border-utama focus:outline-none"
+        />
+      </div>
       <div className="flex gap-3">
         <Tombol type="submit" disabled={isPending}>
           {isPending ? "Memproses..." : labelTombol}
