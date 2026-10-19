@@ -17,10 +17,17 @@ export default async function HalamanKatalog({ searchParams }) {
   const kategoriTerpilih = isKategoriAktif ? kategoriParam : "";
   const urutan = (sp?.urutan || sp?.sort || "").toLowerCase().trim();
 
+  const halamanParam = sp?.halaman || sp?.page || "1";
+  const halaman = Math.max(1, parseInt(halamanParam, 10) || 1);
+  const perPageParam = sp?.per_page || sp?.limit;
+  const perPage = Math.max(1, parseInt(perPageParam || "12", 10) || 12);
+
   const supabase = createPublicClient();
   let daftarProduk = null;
   let daftarKategori = [];
   let pesanError = null;
+  let totalProduk = 0;
+  let totalHalaman = 1;
 
   if (!supabase) {
     pesanError =
@@ -41,8 +48,8 @@ export default async function HalamanKatalog({ searchParams }) {
       ).sort((a, b) => a.localeCompare(b, "id"));
     }
 
-    // Query produk dengan filter kategori, pencarian nama, dan urutan langsung di query database
-    let query = supabase.from("produk").select("*");
+    // Query produk dengan filter kategori, pencarian nama, urutan, dan paginasi langsung di query database
+    let query = supabase.from("produk").select("*", { count: "exact" });
 
     if (kategoriTerpilih) {
       query = query.ilike("kategori", kategoriTerpilih);
@@ -68,17 +75,23 @@ export default async function HalamanKatalog({ searchParams }) {
       query = query.order("id", { ascending: true });
     }
 
-    const { data, error } = await query;
+    // Pembatasan jumlah dilakukan langsung di database menggunakan .range()
+    const from = (halaman - 1) * perPage;
+    const to = from + perPage - 1;
+
+    const { data, count, error } = await query.range(from, to);
 
     if (error) {
       console.error("Gagal mengambil data produk dari Supabase:", error);
       pesanError = "Gagal mengambil data produk dari database.";
     } else {
       daftarProduk = data;
+      totalProduk = count || 0;
+      totalHalaman = Math.max(1, Math.ceil(totalProduk / perPage));
     }
   }
 
-  function buatTautan({ kategoriBaru, urutanBaru }) {
+  function buatTautan({ kategoriBaru, urutanBaru, halamanBaru }) {
     const params = new URLSearchParams();
 
     const kat =
@@ -96,11 +109,27 @@ export default async function HalamanKatalog({ searchParams }) {
       params.set("q", kataKunci);
     }
 
+    // Jika filter atau urutan diubah, otomatis reset ke halaman 1
+    const hal =
+      halamanBaru !== undefined
+        ? halamanBaru
+        : kategoriBaru !== undefined || urutanBaru !== undefined
+        ? 1
+        : halaman;
+
+    if (hal && hal > 1) {
+      params.set("halaman", hal);
+    }
+
+    if (perPageParam) {
+      params.set("per_page", perPage);
+    }
+
     const qs = params.toString();
     return qs ? `/?${qs}` : "/";
   }
 
-  const adaFilter = Boolean(kataKunci || kategoriTerpilih || urutan);
+  const adaFilter = Boolean(kataKunci || kategoriTerpilih || urutan || halaman > 1);
 
   return (
     <>
@@ -241,7 +270,7 @@ export default async function HalamanKatalog({ searchParams }) {
 
           {adaFilter && daftarProduk && daftarProduk.length > 0 && (
             <p className="text-sm text-teks-lembut">
-              Menampilkan {daftarProduk.length} produk
+              Menampilkan {daftarProduk.length} dari {totalProduk} produk
               {kategoriTerpilih && (
                 <>
                   {" "}
@@ -279,11 +308,70 @@ export default async function HalamanKatalog({ searchParams }) {
         {pesanError ? (
           <p className="py-8 text-center text-bahaya">{pesanError}</p>
         ) : daftarProduk && daftarProduk.length > 0 ? (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-            {daftarProduk.map((produk) => (
-              <KartuProduk key={produk.id} produk={produk} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+              {daftarProduk.map((produk) => (
+                <KartuProduk key={produk.id} produk={produk} />
+              ))}
+            </div>
+
+            {totalHalaman > 1 && (
+              <nav
+                aria-label="Navigasi halaman produk"
+                className="mt-6 flex flex-col items-center justify-between gap-4 rounded-xl border border-garis bg-latar p-4 sm:flex-row"
+              >
+                <p className="text-sm text-teks-lembut">
+                  Halaman <strong className="text-teks">{halaman}</strong> dari{" "}
+                  <strong className="text-teks">{totalHalaman}</strong> (Total {totalProduk} produk)
+                </p>
+
+                <div className="flex flex-wrap items-center justify-center gap-1.5">
+                  {halaman > 1 ? (
+                    <Link
+                      href={buatTautan({ halamanBaru: halaman - 1 })}
+                      className="inline-flex h-9 items-center justify-center rounded-lg border border-garis bg-latar px-3 text-sm font-semibold text-teks transition-colors hover:border-utama hover:text-utama"
+                    >
+                      &larr; Sebelumnya
+                    </Link>
+                  ) : (
+                    <span className="inline-flex h-9 cursor-not-allowed items-center justify-center rounded-lg border border-garis bg-permukaan/50 px-3 text-sm font-semibold text-teks-lembut/40">
+                      &larr; Sebelumnya
+                    </span>
+                  )}
+
+                  {Array.from({ length: totalHalaman }, (_, i) => i + 1).map((nomor) => {
+                    const isAktif = nomor === halaman;
+                    return (
+                      <Link
+                        key={nomor}
+                        href={buatTautan({ halamanBaru: nomor })}
+                        className={`inline-flex h-9 min-w-9 items-center justify-center rounded-lg px-3 text-sm font-semibold transition-colors ${
+                          isAktif
+                            ? "bg-utama text-white"
+                            : "border border-garis bg-latar text-teks hover:border-utama hover:text-utama"
+                        }`}
+                      >
+                        {nomor}
+                      </Link>
+                    );
+                  })}
+
+                  {halaman < totalHalaman ? (
+                    <Link
+                      href={buatTautan({ halamanBaru: halaman + 1 })}
+                      className="inline-flex h-9 items-center justify-center rounded-lg border border-garis bg-latar px-3 text-sm font-semibold text-teks transition-colors hover:border-utama hover:text-utama"
+                    >
+                      Selanjutnya &rarr;
+                    </Link>
+                  ) : (
+                    <span className="inline-flex h-9 cursor-not-allowed items-center justify-center rounded-lg border border-garis bg-permukaan/50 px-3 text-sm font-semibold text-teks-lembut/40">
+                      Selanjutnya &rarr;
+                    </span>
+                  )}
+                </div>
+              </nav>
+            )}
+          </>
         ) : adaFilter ? (
           <div className="rounded-xl border border-garis bg-permukaan/30 py-12 text-center">
             <p className="text-base font-semibold text-teks">

@@ -246,6 +246,31 @@ Halaman katalog (`app/page.jsx`) diperbarui dengan fitur pengurutan produk:
 **Perbaikan:**
 Tidak ada perbaikan.
 
+## US-16 Paginasi atau muat lebih banyak (Bonus lanjutan)
+
+**Prompt:**
+Sebagai pengunjung, saya ingin daftar produk tidak terlalu panjang, supaya halaman cepat dibuka.
+
+Bernilai 10 poin.
+
+Kriteria selesai:
+
+- Daftar produk dipecah per halaman atau ada tombol "muat lebih banyak". (4 poin)
+- Pembatasan jumlah dilakukan di query database, bukan hanya disembunyikan. (3 poin)
+- Navigasi antar halaman berfungsi dan jumlah halaman benar. (3 poin)
+
+**Hasil:**
+Fitur paginasi produk berhasil diimplementasikan di katalog publik (`app/page.jsx`):
+- Pembatasan jumlah produk dilakukan langsung di query database Supabase menggunakan `.range(from, to)` dan `{ count: "exact" }`, sehingga produk yang diambil ke memori dan dikirim ke browser dibatasi (12 produk per halaman) dan bukan sekadar disembunyikan di tampilan.
+- Total halaman dihitung secara akurat dari `count` produk di database (`Math.ceil(totalProduk / perPage)`).
+- Disediakan kontrol navigasi paginasi: tombol Sebelumnya (`← Sebelumnya`), nomor-nomor halaman (`1`, `2`, `3`, dst.), dan tombol Selanjutnya (`Selanjutnya →`).
+- Parameter halaman tersimpan di URL query parameter (`halaman` / `page`) dan terintegrasi harmonis dengan filter kategori, pencarian kata kunci, serta pengurutan tanpa menghilangkan parameter aktif.
+- Mengubah filter atau urutan otomatis mengembalikan tampilan ke halaman 1.
+
+**Perbaikan:**
+Tidak ada perbaikan.
+
+
 
 
 
