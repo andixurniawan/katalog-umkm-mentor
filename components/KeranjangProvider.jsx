@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { ekstrakDaftarFoto } from "@/components/GaleriFoto";
+import { ekstrakDaftarFoto } from "@/lib/foto";
 import { hargaAktif } from "@/lib/format";
 
 const KUNCI_STORAGE = "keranjang";

@@ -469,3 +469,24 @@ Kriteria selesai:
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-26 Metadata SEO dan Open Graph
+
+**Prompt:**
+Sebagai pemilik toko, saya ingin link produk tampil rapi saat dibagikan, supaya menarik pembeli.
+
+Bernilai 5 poin.
+
+Kriteria selesai:
+
+- Halaman detail memakai `generateMetadata` untuk judul dan deskripsi yang sesuai produk. (3 poin)
+- Open Graph memuat nama dan foto produk. (2 poin)
+
+**Hasil:**
+- `app/produk/[id]/page.jsx`: `generateMetadata` mengisi `title` (nama produk), `description` (deskripsi produk dipotong 160 karakter, atau "nama di toko" jika kosong), Open Graph (`title`, `description`, `url`, `siteName`, `images` berisi foto pertama produk), dan Twitter card. Produk yang tidak ada mendapat judul "Produk tidak ditemukan". Query produk dibungkus `cache()` supaya tidak dijalankan dua kali per request.
+- `app/layout.jsx`: `metadataBase` agar URL foto dan halaman di Open Graph menjadi absolut, plus template judul `%s | Nama Toko`. Alamat situs dari `SITE_URL`, atau `VERCEL_PROJECT_PRODUCTION_URL` di Vercel, atau `http://localhost:3000`.
+- `lib/foto.js`: `ekstrakDaftarFoto` dipindah dari `GaleriFoto.jsx` karena fungsi dari file `"use client"` tidak bisa dipanggil di Server Component. `GaleriFoto.jsx` dan `KeranjangProvider.jsx` ikut diperbarui.
+- `.env.example`: variabel opsional `SITE_URL`.
+
+**Perbaikan:**
+Tidak ada perbaikan.

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import KartuProduk from "@/components/KartuProduk";
@@ -8,26 +9,67 @@ import TombolFavorit from "@/components/TombolFavorit";
 import HargaProduk from "@/components/HargaProduk";
 import BadgeProduk from "@/components/BadgeProduk";
 import { createPublicClient } from "@/lib/supabase/server";
+import { ekstrakDaftarFoto } from "@/lib/foto";
+import { toko } from "@/lib/toko";
 
 export const dynamic = "force-dynamic";
 
-export default async function HalamanDetailProduk({ params }) {
-  const { id } = await params;
+// Dipakai bersama oleh generateMetadata dan halaman; cache() membuat query hanya berjalan sekali per request.
+const ambilProduk = cache(async (id) => {
   const supabase = createPublicClient();
+  if (!supabase) return null;
 
-  if (!supabase) {
-    notFound();
-  }
-
-  const { data: produk, error } = await supabase
+  const { data, error } = await supabase
     .from("produk")
     .select("*")
     .eq("id", id)
     .maybeSingle();
 
-  if (error || !produk) {
+  return error ? null : data;
+});
+
+export async function generateMetadata({ params }) {
+  const { id } = await params;
+  const produk = await ambilProduk(id);
+
+  if (!produk) {
+    return { title: "Produk tidak ditemukan" };
+  }
+
+  const deskripsi = produk.deskripsi
+    ? produk.deskripsi.replace(/\s+/g, " ").trim().slice(0, 160)
+    : `${produk.nama} di ${toko.nama}`;
+  const foto = ekstrakDaftarFoto(produk.foto_url)[0];
+
+  return {
+    title: produk.nama,
+    description: deskripsi,
+    openGraph: {
+      type: "website",
+      siteName: toko.nama,
+      title: produk.nama,
+      description: deskripsi,
+      url: `/produk/${produk.id}`,
+      ...(foto && { images: [{ url: foto, alt: produk.nama }] }),
+    },
+    twitter: {
+      card: foto ? "summary_large_image" : "summary",
+      title: produk.nama,
+      description: deskripsi,
+      ...(foto && { images: [foto] }),
+    },
+  };
+}
+
+export default async function HalamanDetailProduk({ params }) {
+  const { id } = await params;
+  const produk = await ambilProduk(id);
+
+  if (!produk) {
     notFound();
   }
+
+  const supabase = createPublicClient();
 
   // Ambil beberapa produk lain dari kategori yang sama dari database (US-17)
   let produkTerkait = [];
