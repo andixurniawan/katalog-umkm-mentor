@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import FormProduk from "@/components/FormProduk";
 import { updateProductAction } from "@/app/admin/actions";
 
-export default function FormUbahProduk({ produk }) {
+export default function FormUbahProduk({ produk, daftarKategori }) {
   const [state, formAction, isPending] = useActionState(updateProductAction, null);
 
   return (
@@ -14,6 +14,7 @@ export default function FormUbahProduk({ produk }) {
       action={formAction}
       state={state}
       isPending={isPending}
+      daftarKategori={daftarKategori}
     />
   );
 }

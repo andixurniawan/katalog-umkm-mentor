@@ -1,13 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Input from "@/components/Input";
 import Tombol from "@/components/Tombol";
 import { generateDescriptionAction } from "@/app/admin/actions";
 
 // Dipakai untuk tambah produk (US-08) dan ubah produk (US-09). Keduanya bonus di jalur offline.
 // Nama field sama dengan kolom tabel "produk".
-export default function FormProduk({ produk = {}, labelTombol, action, state, isPending }) {
+export default function FormProduk({
+  produk = {},
+  labelTombol,
+  action,
+  state,
+  isPending,
+  daftarKategori = [],
+}) {
   const [nama, setNama] = useState(produk?.nama || "");
   const [kategori, setKategori] = useState(produk?.kategori || "");
   const [deskripsi, setDeskripsi] = useState(produk?.deskripsi || "");
@@ -85,12 +93,28 @@ export default function FormProduk({ produk = {}, labelTombol, action, state, is
           <option value="Terlaris">Terlaris</option>
         </select>
       </div>
-      <Input
-        label="Kategori"
-        name="kategori"
-        value={kategori}
-        onChange={(e) => setKategori(e.target.value)}
-      />
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="kategori" className="text-sm font-semibold">
+          Kategori{" "}
+          <Link href="/admin/kategori" className="font-normal text-utama underline underline-offset-2">
+            (kelola kategori)
+          </Link>
+        </label>
+        <select
+          id="kategori"
+          name="kategori"
+          value={kategori}
+          onChange={(e) => setKategori(e.target.value)}
+          className="w-full rounded-lg border border-garis bg-latar px-3 py-2.5 text-base text-teks focus:border-utama focus:outline-none"
+        >
+          <option value="">Tanpa kategori</option>
+          {daftarKategori.map((nama) => (
+            <option key={nama} value={nama}>
+              {nama}
+            </option>
+          ))}
+        </select>
+      </div>
       <div className="flex flex-col gap-1.5">
         <label htmlFor="stok" className="text-sm font-semibold">
           Stok{" "}

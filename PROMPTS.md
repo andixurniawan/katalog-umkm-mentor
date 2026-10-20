@@ -575,3 +575,27 @@ Kriteria selesai:
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-31 Kelola kategori
+
+**Prompt:**
+Sebagai admin, saya ingin mengatur daftar kategori, supaya produk terkelompok rapi.
+
+Bernilai 15 poin.
+
+Kriteria selesai:
+
+- Admin bisa menambah kategori. (4 poin)
+- Admin bisa mengubah nama kategori. (3 poin)
+- Admin bisa menghapus kategori, dan kategori yang masih dipakai produk ditolak atau ditangani dengan jelas. (4 poin)
+- Daftar kategori di form produk berasal dari data ini, dan semua aksi memeriksa login di server. (4 poin)
+
+**Hasil:**
+- `docs/schema.sql` bagian 8: tabel `kategori` (nama unik, tidak peka huruf besar/kecil, 1 sampai 50 karakter) dengan RLS yang sama seperti `produk`. Data lama dimigrasi: kategori yang sudah dipakai produk disalin ke tabel baru. Kolom `produk.kategori` tidak diganti nama, tetapi diberi foreign key ke `kategori.nama` dengan `on update cascade` (ubah nama ikut mengubah produk) dan `on delete restrict` (kategori yang dipakai tidak bisa dihapus). Jalankan bagian 8 di Supabase SQL Editor.
+- `app/admin/actions.js`: `createCategoryAction`, `renameCategoryAction`, `deleteCategoryAction`; semuanya memeriksa login di server dan memvalidasi nama. Hapus menghitung dulu produk yang memakai kategori dan menolak dengan pesan "masih dipakai N produk"; foreign key menjadi pengaman kedua. Nama kembar ditolak dengan pesan yang jelas.
+- `app/admin/kategori/page.jsx`, `components/FormTambahKategori.jsx`, `components/BarisKategori.jsx`: halaman kelola kategori (tambah, ubah nama inline, hapus dengan konfirmasi, jumlah produk per kategori). `NavAdmin.jsx` mendapat tautan "Kategori".
+- Form produk: kolom kategori sekarang dropdown dari tabel `kategori` (`FormProduk.jsx`). `app/admin/produk/baru/page.jsx` menjadi Server Component yang mengambil kategori, form-nya dipindah ke `FormTambahProduk.jsx`; halaman ubah ikut mengirim daftar kategori.
+- `docs/skema-database.md`: tabel `kategori` dan relasinya.
+
+**Perbaikan:**
+Tidak ada perbaikan.

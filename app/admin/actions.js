@@ -320,3 +320,120 @@ Tulis HANYA deskripsi produk tersebut, tanpa tanda kutip, tanpa pembuka/penutup,
     error: "Gagal membuat deskripsi dengan AI: " + (lastError || "Respon kosong dari API."),
   };
 }
+
+// ---- Kategori (US-31) ----
+
+const PANJANG_KATEGORI_MAKSIMAL = 50;
+
+async function periksaAdmin() {
+  const supabase = await createServerAuthClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  return error || !user ? { supabase: null } : { supabase };
+}
+
+function bacaNamaKategori(formData) {
+  const nama = formData.get("nama")?.toString().trim().replace(/\s+/g, " ") || "";
+  if (!nama) return { error: "Nama kategori wajib diisi." };
+  if (nama.length > PANJANG_KATEGORI_MAKSIMAL) {
+    return { error: `Nama kategori maksimal ${PANJANG_KATEGORI_MAKSIMAL} karakter.` };
+  }
+  return { nama };
+}
+
+function segarkanHalamanKategori() {
+  revalidatePath("/admin/kategori");
+  revalidatePath("/admin");
+  revalidatePath("/");
+}
+
+export async function createCategoryAction(prevState, formData) {
+  const { supabase } = await periksaAdmin();
+  if (!supabase) return { error: "Anda harus login terlebih dahulu." };
+
+  const { nama, error: errorNama } = bacaNamaKategori(formData);
+  if (errorNama) return { error: errorNama };
+
+  const { error } = await supabase.from("kategori").insert({ nama });
+
+  if (error) {
+    if (error.code === "23505") return { error: `Kategori "${nama}" sudah ada.` };
+    console.error("Gagal menambah kategori:", error.message);
+    return { error: "Gagal menambah kategori: " + error.message };
+  }
+
+  segarkanHalamanKategori();
+  return { success: `Kategori "${nama}" ditambahkan.`, waktu: Date.now() };
+}
+
+export async function renameCategoryAction(prevState, formData) {
+  const { supabase } = await periksaAdmin();
+  if (!supabase) return { error: "Anda harus login terlebih dahulu." };
+
+  const id = formData.get("id");
+  if (!id) return { error: "ID kategori tidak valid." };
+
+  const { nama, error: errorNama } = bacaNamaKategori(formData);
+  if (errorNama) return { error: errorNama };
+
+  // Foreign key (on update cascade) ikut mengubah kategori di semua produk terkait.
+  const { error } = await supabase.from("kategori").update({ nama }).eq("id", id);
+
+  if (error) {
+    if (error.code === "23505") return { error: `Kategori "${nama}" sudah ada.` };
+    console.error("Gagal mengubah kategori:", error.message);
+    return { error: "Gagal mengubah kategori: " + error.message };
+  }
+
+  segarkanHalamanKategori();
+  return { success: "Nama kategori diubah.", waktu: Date.now() };
+}
+
+export async function deleteCategoryAction(prevState, formData) {
+  const { supabase } = await periksaAdmin();
+  if (!supabase) return { error: "Anda harus login terlebih dahulu." };
+
+  const id = formData.get("id");
+  if (!id) return { error: "ID kategori tidak valid." };
+
+  const { data: kategori, error: errorBaca } = await supabase
+    .from("kategori")
+    .select("nama")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (errorBaca || !kategori) return { error: "Kategori tidak ditemukan." };
+
+  const { count, error: errorHitung } = await supabase
+    .from("produk")
+    .select("id", { count: "exact", head: true })
+    .eq("kategori", kategori.nama);
+
+  if (errorHitung) {
+    console.error("Gagal memeriksa pemakaian kategori:", errorHitung.message);
+    return { error: "Gagal memeriksa pemakaian kategori." };
+  }
+
+  if (count > 0) {
+    return {
+      error: `Kategori "${kategori.nama}" masih dipakai ${count} produk. Pindahkan atau hapus produknya dulu.`,
+    };
+  }
+
+  const { error } = await supabase.from("kategori").delete().eq("id", id);
+
+  if (error) {
+    // 23503: produk baru memakai kategori ini di antara pemeriksaan dan penghapusan.
+    if (error.code === "23503") {
+      return { error: `Kategori "${kategori.nama}" masih dipakai produk.` };
+    }
+    console.error("Gagal menghapus kategori:", error.message);
+    return { error: "Gagal menghapus kategori: " + error.message };
+  }
+
+  segarkanHalamanKategori();
+  return { success: `Kategori "${kategori.nama}" dihapus.`, waktu: Date.now() };
+}
