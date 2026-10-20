@@ -1,9 +1,10 @@
 import Tombol from "@/components/Tombol";
-import { toko } from "@/lib/toko";
+import { ambilToko } from "@/lib/pengaturan-toko";
 
 export const metadata = { title: "Tentang kami" };
 
-export default function HalamanTentang() {
+export default async function HalamanTentang() {
+  const toko = await ambilToko();
   const linkWhatsApp = `https://wa.me/${toko.nomorWhatsApp}`;
   // Tampilkan nomor dalam format lokal, misalnya 6282227370677 menjadi 082227370677.
   const nomorTampil = `0${toko.nomorWhatsApp.replace(/^62/, "")}`;

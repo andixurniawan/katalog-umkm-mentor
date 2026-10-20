@@ -2,9 +2,8 @@ import Link from "next/link";
 import LinkBandingkan from "@/components/LinkBandingkan";
 import LinkKeranjang from "@/components/LinkKeranjang";
 import TombolTema from "@/components/TombolTema";
-import { toko } from "@/lib/toko";
 
-export default function Header() {
+export default function Header({ toko }) {
   return (
     <header className="border-b border-garis bg-latar">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">

@@ -10,6 +10,9 @@ export default function NavAdmin() {
       <Link href="/admin/kategori" className="font-semibold hover:text-utama">
         Kategori
       </Link>
+      <Link href="/admin/pengaturan" className="font-semibold hover:text-utama">
+        Pengaturan
+      </Link>
       <Link href="/admin/banner" className="font-semibold hover:text-utama">
         Banner
       </Link>

@@ -252,3 +252,28 @@ create policy "admin_ubah_banner" on public.banner
   for update to authenticated using (true) with check (true);
 create policy "admin_hapus_banner" on public.banner
   for delete to authenticated using (true);
+
+-- 13. Pengaturan toko (US-43)
+-- Satu baris saja (id = 1). Dibaca lewat server (SUPABASE_SECRET_KEY); admin yang login boleh mengubah.
+-- Jika baris belum ada, aplikasi memakai nilai cadangan di lib/toko.js.
+create table if not exists public.pengaturan_toko (
+  id smallint primary key default 1 check (id = 1),
+  nama text not null check (char_length(btrim(nama)) between 1 and 60),
+  nomor_whatsapp text not null check (nomor_whatsapp ~ '^62[0-9]{8,13}$'),
+  jam_buka text check (jam_buka is null or char_length(jam_buka) <= 100),
+  alamat text check (alamat is null or char_length(alamat) <= 300),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.pengaturan_toko enable row level security;
+
+drop policy if exists "admin_baca_pengaturan_toko" on public.pengaturan_toko;
+drop policy if exists "admin_tambah_pengaturan_toko" on public.pengaturan_toko;
+drop policy if exists "admin_ubah_pengaturan_toko" on public.pengaturan_toko;
+
+create policy "admin_baca_pengaturan_toko" on public.pengaturan_toko
+  for select to authenticated using (true);
+create policy "admin_tambah_pengaturan_toko" on public.pengaturan_toko
+  for insert to authenticated with check (true);
+create policy "admin_ubah_pengaturan_toko" on public.pengaturan_toko
+  for update to authenticated using (true) with check (true);

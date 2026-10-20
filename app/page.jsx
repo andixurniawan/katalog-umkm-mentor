@@ -4,12 +4,13 @@ import Input from "@/components/Input";
 import Tombol from "@/components/Tombol";
 import BannerPromo from "@/components/BannerPromo";
 import TerakhirDilihat from "@/components/TerakhirDilihat";
-import { toko } from "@/lib/toko";
+import { ambilToko } from "@/lib/pengaturan-toko";
 import { createPublicClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function HalamanKatalog({ searchParams }) {
+  const toko = await ambilToko();
   const sp = await searchParams;
   const kataKunci = (sp?.q || sp?.cari || "").trim();
   const kategoriParam = (sp?.kategori || "").trim();

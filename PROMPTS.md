@@ -784,3 +784,18 @@ Sebagai admin, saya ingin memasang banner promo, supaya pengunjung tahu ada pena
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-43 Pengaturan toko dari admin
+
+**Prompt:**
+Sebagai admin, saya ingin mengubah data toko tanpa mengedit kode, supaya mudah diperbarui. Bernilai 15 poin. Kriteria: halaman admin mengubah nama toko, nomor WhatsApp, jam buka, dan alamat, tersimpan di database (4); tombol pesan WhatsApp memakai nomor dari pengaturan, `lib/toko.js` sebagai cadangan (4); header, footer, dan tentang memakai nama dan jam buka dari database (4); nomor WhatsApp divalidasi dan aksinya memeriksa login (3).
+
+**Hasil:**
+- `docs/schema.sql` bagian 13: tabel `pengaturan_toko` satu baris (`id = 1`) dengan check format nomor dan RLS khusus admin. **Harus dijalankan di Supabase SQL Editor.**
+- `lib/pengaturan-toko.js` (baru): `ambilToko()` membaca database (di-cache dengan tag, `unstable_cache`) dan memakai `lib/toko.js` sebagai cadangan bila baris/tabel belum ada atau error. Halaman statis (tentang, keranjang) tetap statis.
+- `app/admin/pengaturan/page.jsx`, `components/FormPengaturanToko.jsx`, `simpanPengaturanTokoAction` di `app/admin/actions.js` (cek login dengan `periksaAdmin()`, `updateTag` + `revalidatePath("/", "layout")` supaya perubahan langsung terlihat). Tautan "Pengaturan" di `NavAdmin`.
+- `lib/validasi-toko.js`: nama wajib maks 60; nomor dinormalisasi ke format `62…` (`0812…`, `+62 812-…` diterima; huruf atau panjang salah ditolak); jam buka maks 100, alamat maks 300.
+- Pemakai: `Header`, `Footer`, beranda, `tentang`, metadata (layout dan detail produk), `manifest`. Komponen client (`TombolWhatsApp`, `IsiKeranjang`) memakai nomor lewat `components/TokoProvider.jsx` yang diisi dari layout.
+
+**Perbaikan:**
+Tidak ada perbaikan.

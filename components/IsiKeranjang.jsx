@@ -3,7 +3,7 @@
 import { useKeranjang } from "@/components/KeranjangProvider";
 import Tombol from "@/components/Tombol";
 import { catatKlikWhatsAppAction } from "@/app/produk/[id]/catat-klik";
-import { toko } from "@/lib/toko";
+import { useToko } from "@/components/TokoProvider";
 import { formatRupiah } from "@/lib/format";
 
 function buatPesan(items, totalHarga) {
@@ -15,6 +15,7 @@ function buatPesan(items, totalHarga) {
 }
 
 export default function IsiKeranjang() {
+  const toko = useToko();
   const { items, siap, totalHarga, setJumlah, hapus, kosongkan } = useKeranjang();
 
   if (!siap) {

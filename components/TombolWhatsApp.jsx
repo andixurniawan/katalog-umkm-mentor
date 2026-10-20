@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { toko } from "@/lib/toko";
+import { useToko } from "@/components/TokoProvider";
 import TombolTambahKeranjang from "@/components/TombolTambahKeranjang";
 import { catatKlikWhatsAppAction } from "@/app/produk/[id]/catat-klik";
 import { formatRupiah, hargaAktif } from "@/lib/format";
 
 export default function TombolWhatsApp({ produk }) {
+  const toko = useToko();
   if (!produk) return null;
 
   const [jumlah, setJumlah] = useState(1);

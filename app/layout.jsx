@@ -7,28 +7,33 @@ import { BandingkanProvider } from "@/components/BandingkanProvider";
 
 // Dijalankan sebelum halaman tampil: pakai pilihan tersimpan, kalau belum ada ikuti pengaturan perangkat.
 const skripTema = `try{var t=localStorage.getItem("tema");if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.dataset.theme=t}catch(e){}`;
-import { toko } from "@/lib/toko";
+import { ambilToko } from "@/lib/pengaturan-toko";
+import { TokoProvider } from "@/components/TokoProvider";
 import { alamatSitus } from "@/lib/situs";
 
-export const metadata = {
-  metadataBase: new URL(alamatSitus),
-  title: { default: toko.nama, template: `%s | ${toko.nama}` },
-  description: toko.tagline,
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: toko.nama,
-  },
-  icons: {
-    apple: "/icons/icon-192.png",
-  },
-};
+export async function generateMetadata() {
+  const toko = await ambilToko();
+  return {
+    metadataBase: new URL(alamatSitus),
+    title: { default: toko.nama, template: `%s | ${toko.nama}` },
+    description: toko.tagline,
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: toko.nama,
+    },
+    icons: {
+      apple: "/icons/icon-192.png",
+    },
+  };
+}
 
 export const viewport = {
   themeColor: "#1f6b4f",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const toko = await ambilToko();
   return (
     <html lang="id" suppressHydrationWarning>
       <head>
@@ -47,15 +52,17 @@ export default function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-title" content={toko.nama} />
       </head>
       <body className="flex min-h-screen flex-col font-sans antialiased">
-        <KeranjangProvider>
-          <FavoritProvider>
-            <BandingkanProvider>
-              <Header />
-              <main className="mx-auto w-full max-w-5xl flex-1 px-4">{children}</main>
-              <Footer />
-            </BandingkanProvider>
-          </FavoritProvider>
-        </KeranjangProvider>
+        <TokoProvider toko={toko}>
+          <KeranjangProvider>
+            <FavoritProvider>
+              <BandingkanProvider>
+                <Header toko={toko} />
+                <main className="mx-auto w-full max-w-5xl flex-1 px-4">{children}</main>
+                <Footer toko={toko} />
+              </BandingkanProvider>
+            </FavoritProvider>
+          </KeranjangProvider>
+        </TokoProvider>
       </body>
     </html>
   );

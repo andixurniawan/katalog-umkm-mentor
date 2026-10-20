@@ -15,7 +15,7 @@ import BadgeProduk from "@/components/BadgeProduk";
 import { createPublicClient } from "@/lib/supabase/server";
 import { ekstrakDaftarFoto } from "@/lib/foto";
 import { ambilUlasanProduk } from "@/lib/ulasan";
-import { toko } from "@/lib/toko";
+import { ambilToko } from "@/lib/pengaturan-toko";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +37,7 @@ const ambilProduk = cache(async (id) => {
 export async function generateMetadata({ params }) {
   const { id } = await params;
   const produk = await ambilProduk(id);
+  const toko = await ambilToko();
 
   if (!produk) {
     return { title: "Produk tidak ditemukan" };

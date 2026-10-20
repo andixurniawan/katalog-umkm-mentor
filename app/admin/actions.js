@@ -1,11 +1,13 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { createServerAuthClient } from "@/lib/supabase/server";
 import { unggahFoto } from "@/lib/unggah-foto";
 import { validasiProduk } from "@/lib/validasi-produk";
 import { buatDeskripsiAi } from "@/lib/deskripsi-ai";
+import { validasiToko } from "@/lib/validasi-toko";
+import { TAG_TOKO } from "@/lib/pengaturan-toko";
 import { validasiBanner } from "@/lib/validasi-banner";
 
 export async function loginAction(prevState, formData) {
@@ -481,4 +483,34 @@ export async function deleteBannerAction(formData) {
 
   revalidatePath("/admin/banner");
   revalidatePath("/");
+}
+
+// ---- Pengaturan toko (US-43) ----
+
+export async function simpanPengaturanTokoAction(prevState, formData) {
+  const { supabase } = await periksaAdmin();
+  if (!supabase) return { error: "Anda harus login terlebih dahulu." };
+
+  const { data, values, errors } = validasiToko(formData);
+  if (Object.keys(errors).length > 0) {
+    return { error: "Periksa kembali isian yang ditandai.", errors, values };
+  }
+
+  const { error } = await supabase
+    .from("pengaturan_toko")
+    .upsert({ id: 1, ...data, updated_at: new Date().toISOString() });
+
+  if (error) {
+    console.error("Gagal menyimpan pengaturan toko:", error.message);
+    return { error: "Gagal menyimpan pengaturan: " + error.message, values };
+  }
+
+  // Header, footer, tentang, dan tombol WhatsApp memakai data ini di semua halaman.
+  updateTag(TAG_TOKO);
+  revalidatePath("/", "layout");
+  return {
+    success: "Pengaturan toko disimpan.",
+    values: { ...values, nomor_whatsapp: data.nomor_whatsapp },
+    waktu: Date.now(),
+  };
 }
