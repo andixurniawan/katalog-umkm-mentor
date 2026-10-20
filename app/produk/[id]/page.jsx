@@ -8,6 +8,7 @@ import TombolBandingkan from "@/components/TombolBandingkan";
 import TombolFavorit from "@/components/TombolFavorit";
 import CatatDilihat from "@/components/CatatDilihat";
 import Bintang from "@/components/Bintang";
+import FormTanyaAi from "@/components/FormTanyaAi";
 import FormUlasan from "@/components/FormUlasan";
 import PanelPembelian from "@/components/PanelPembelian";
 import BadgeProduk from "@/components/BadgeProduk";
@@ -145,6 +146,19 @@ export default async function HalamanDetailProduk({ params }) {
           </div>
         </div>
       </article>
+
+      <section
+        aria-labelledby="judul-tanya"
+        className="mt-12 border-t border-garis pt-10 sm:mt-16 sm:pt-12"
+      >
+        <h2 id="judul-tanya" className="text-xl font-bold">
+          Tanya tentang produk ini
+        </h2>
+        <p className="mb-4 mt-1 text-sm text-teks-lembut">
+          Asisten AI menjawab berdasarkan data produk di halaman ini.
+        </p>
+        <FormTanyaAi produkId={produk.id} />
+      </section>
 
       <section
         id="ulasan"
