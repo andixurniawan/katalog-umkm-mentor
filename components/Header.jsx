@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LinkBandingkan from "@/components/LinkBandingkan";
 import LinkKeranjang from "@/components/LinkKeranjang";
 import TombolTema from "@/components/TombolTema";
 import { toko } from "@/lib/toko";
@@ -17,6 +18,7 @@ export default function Header() {
           <Link href="/favorit" className="text-sm font-semibold hover:text-utama">
             Favorit
           </Link>
+          <LinkBandingkan />
           <LinkKeranjang />
           <TombolTema />
         </nav>

@@ -703,3 +703,16 @@ Sebagai pengunjung, saya ingin melihat produk yang baru saya buka, supaya mudah 
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-37 Bandingkan 2 produk
+
+**Prompt:**
+Sebagai pengunjung, saya ingin membandingkan dua produk, supaya saya bisa memilih yang cocok. Bernilai 15 poin. Kriteria: pengunjung bisa memilih dua produk (4); halaman perbandingan menampilkan kedua produk berdampingan: foto, kategori, harga, deskripsi (4); memilih lebih dari dua ditolak dengan pesan atau menggantikan pilihan lama (4); produk yang tidak ada ditangani dengan jelas (3).
+
+**Hasil:**
+- `components/BandingkanProvider.jsx` (baru): pilihan disimpan di `localStorage` (`bandingkan`), maksimal 2. Memilih produk ketiga menggantikan pilihan yang paling lama, dan tombol memberi tahu hal itu sebelum diklik.
+- `components/TombolBandingkan.jsx` di halaman detail, `components/LinkBandingkan.jsx` di header (menampilkan jumlah terpilih dan tautan langsung ke perbandingan bila sudah 2).
+- `app/bandingkan/page.jsx` (baru): `/bandingkan?a=ID&b=ID` menampilkan dua produk berdampingan (foto, nama, kategori, harga/diskon, stok, deskripsi). Tanpa parameter atau baru satu produk: halaman petunjuk (dan langsung diarahkan bila 2 pilihan sudah tersimpan). ID yang sama: pesan. ID bukan angka, produk tidak ada, atau nonaktif: `notFound()` (halaman "tidak ditemukan").
+
+**Perbaikan:**
+Tidak ada perbaikan.

@@ -5,6 +5,7 @@ import KartuProduk from "@/components/KartuProduk";
 import GaleriFoto from "@/components/GaleriFoto";
 import TombolWhatsApp from "@/components/TombolWhatsApp";
 import TombolBagikan from "@/components/TombolBagikan";
+import TombolBandingkan from "@/components/TombolBandingkan";
 import TombolFavorit from "@/components/TombolFavorit";
 import CatatDilihat from "@/components/CatatDilihat";
 import HargaProduk from "@/components/HargaProduk";
@@ -118,6 +119,7 @@ export default async function HalamanDetailProduk({ params }) {
           <div className="flex flex-wrap items-center gap-3">
             <TombolFavorit produk={produk} denganTeks />
             <TombolBagikan nama={produk.nama} />
+            <TombolBandingkan produk={produk} />
           </div>
         </div>
       </article>
