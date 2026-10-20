@@ -172,3 +172,31 @@ alter table public.produk
 -- true = tampil di katalog publik; false = disembunyikan (data tetap ada).
 alter table public.produk
   add column if not exists aktif boolean not null default true;
+
+-- 10. Ulasan dan rating produk (US-38, US-39)
+-- Pengunjung mengirim ulasan lewat Server Action (memakai SUPABASE_SECRET_KEY), jadi tidak ada
+-- policy tulis untuk publik. Admin yang login boleh membaca, menyembunyikan, dan menghapus.
+create table if not exists public.ulasan (
+  id bigint generated always as identity primary key,
+  produk_id bigint not null references public.produk (id) on delete cascade,
+  nama text not null check (char_length(btrim(nama)) between 1 and 50),
+  rating smallint not null check (rating between 1 and 5),
+  komentar text not null check (char_length(btrim(komentar)) between 1 and 500),
+  tampil boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists ulasan_produk_idx on public.ulasan (produk_id, created_at desc);
+
+alter table public.ulasan enable row level security;
+
+drop policy if exists "admin_baca_ulasan" on public.ulasan;
+drop policy if exists "admin_ubah_ulasan" on public.ulasan;
+drop policy if exists "admin_hapus_ulasan" on public.ulasan;
+
+create policy "admin_baca_ulasan" on public.ulasan
+  for select to authenticated using (true);
+create policy "admin_ubah_ulasan" on public.ulasan
+  for update to authenticated using (true) with check (true);
+create policy "admin_hapus_ulasan" on public.ulasan
+  for delete to authenticated using (true);

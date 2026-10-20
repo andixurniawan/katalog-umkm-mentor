@@ -8,10 +8,13 @@ import TombolBagikan from "@/components/TombolBagikan";
 import TombolBandingkan from "@/components/TombolBandingkan";
 import TombolFavorit from "@/components/TombolFavorit";
 import CatatDilihat from "@/components/CatatDilihat";
+import Bintang from "@/components/Bintang";
+import FormUlasan from "@/components/FormUlasan";
 import HargaProduk from "@/components/HargaProduk";
 import BadgeProduk from "@/components/BadgeProduk";
 import { createPublicClient } from "@/lib/supabase/server";
 import { ekstrakDaftarFoto } from "@/lib/foto";
+import { ambilUlasanProduk } from "@/lib/ulasan";
 import { toko } from "@/lib/toko";
 
 export const dynamic = "force-dynamic";
@@ -92,6 +95,8 @@ export default async function HalamanDetailProduk({ params }) {
     }
   }
 
+  const ulasan = await ambilUlasanProduk(supabase, produk.id);
+
   return (
     <div className="py-8 md:py-12">
       <CatatDilihat produk={produk} />
@@ -111,6 +116,14 @@ export default async function HalamanDetailProduk({ params }) {
           <h1 className="text-3xl font-extrabold leading-tight tracking-tight">
             {produk.nama}
           </h1>
+          {ulasan.jumlah > 0 && (
+            <a href="#ulasan" className="flex items-center gap-2 text-sm text-teks-lembut hover:text-utama">
+              <Bintang nilai={ulasan.rata} />
+              <span>
+                {ulasan.rata.toFixed(1)} ({ulasan.jumlah} ulasan)
+              </span>
+            </a>
+          )}
           <HargaProduk produk={produk} besar />
           <p className="max-w-prose leading-relaxed text-teks-lembut">
             {produk.deskripsi}
@@ -123,6 +136,52 @@ export default async function HalamanDetailProduk({ params }) {
           </div>
         </div>
       </article>
+
+      <section
+        id="ulasan"
+        aria-labelledby="judul-ulasan"
+        className="mt-12 border-t border-garis pt-10 sm:mt-16 sm:pt-12"
+      >
+        <h2 id="judul-ulasan" className="text-xl font-bold">
+          Ulasan
+        </h2>
+        {ulasan.jumlah > 0 && (
+          <p className="mt-2 flex items-center gap-2 text-sm text-teks-lembut">
+            <Bintang nilai={ulasan.rata} ukuran="text-xl" />
+            <span>
+              <strong className="text-teks">{ulasan.rata.toFixed(1)}</strong> dari 5 · {ulasan.jumlah} ulasan
+            </span>
+          </p>
+        )}
+        <div className="mt-6 grid gap-10 md:grid-cols-2">
+          <div>
+            {ulasan.error ? (
+              <p className="text-sm text-teks-lembut">Ulasan belum bisa ditampilkan saat ini.</p>
+            ) : ulasan.jumlah === 0 ? (
+              <p className="text-sm text-teks-lembut">Belum ada ulasan. Jadilah yang pertama.</p>
+            ) : (
+              <ul className="flex flex-col divide-y divide-garis">
+                {ulasan.daftar.map((u) => (
+                  <li key={u.id} className="flex flex-col gap-1 py-4 first:pt-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Bintang nilai={u.rating} ukuran="text-sm" />
+                      <span className="text-sm font-semibold">{u.nama}</span>
+                      <time dateTime={u.created_at} className="text-xs text-teks-lembut">
+                        {new Date(u.created_at).toLocaleDateString("id-ID", { dateStyle: "medium" })}
+                      </time>
+                    </div>
+                    <p className="whitespace-pre-line text-sm leading-relaxed text-teks-lembut">{u.komentar}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div>
+            <h3 className="mb-3 font-semibold">Tulis ulasan</h3>
+            <FormUlasan produkId={produk.id} />
+          </div>
+        </div>
+      </section>
 
       {produkTerkait.length > 0 && (
         <section

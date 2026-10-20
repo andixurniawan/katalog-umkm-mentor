@@ -716,3 +716,17 @@ Sebagai pengunjung, saya ingin membandingkan dua produk, supaya saya bisa memili
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-38 Ulasan dan rating
+
+**Prompt:**
+Sebagai pengunjung, saya ingin memberi ulasan dan rating, supaya pembeli lain terbantu. Bernilai 15 poin. Kriteria: form ulasan (nama, rating 1 sampai 5, komentar) di halaman detail (4); disimpan lewat Server Action dengan validasi di server (4); daftar ulasan dan rata-rata rating tampil (4); perlindungan spam dasar: batas panjang dan honeypot atau batas kiriman (3).
+
+**Hasil:**
+- `docs/schema.sql` bagian 10: tabel `ulasan` (produk_id, nama, rating 1–5, komentar, tampil, created_at) dengan RLS aktif. Tidak ada policy tulis untuk publik; admin yang login boleh membaca, mengubah, dan menghapus. **Bagian ini harus dijalankan di Supabase SQL Editor.** Sebelum itu, halaman detail menampilkan "Ulasan belum bisa ditampilkan saat ini" (diuji).
+- `app/produk/[id]/actions.js` (baru): `kirimUlasanAction` memakai `lib/validasi-ulasan.js` (nama wajib maks 50, rating 1–5, komentar wajib maks 500), memeriksa produk aktif, lalu menyimpan lewat server.
+- Spam: kolom honeypot `website` (bot yang mengisinya dibalas seolah berhasil, tidak disimpan), batas panjang, dan `lib/batas-kiriman.js` (maksimal 3 ulasan per 10 menit per alamat, di memori server; IP tidak disimpan ke database).
+- `components/FormUlasan.jsx`, `components/Bintang.jsx`, `lib/ulasan.js` (daftar ulasan yang tampil dan rata-rata). Detail produk menampilkan rata-rata di bawah judul dan bagian "Ulasan" berisi daftar serta form.
+
+**Perbaikan:**
+Tidak ada perbaikan.
