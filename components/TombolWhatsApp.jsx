@@ -89,7 +89,7 @@ export default function TombolWhatsApp({ produk }) {
                   onClick={() => setVarian(isDipilih ? "" : item)}
                   className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${
                     isDipilih
-                      ? "bg-utama text-white"
+                      ? "bg-utama text-kontras"
                       : "border border-garis bg-latar text-teks-lembut hover:border-utama hover:text-utama"
                   }`}
                 >
@@ -156,7 +156,7 @@ export default function TombolWhatsApp({ produk }) {
         href={linkWhatsApp}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex w-full items-center justify-center rounded-lg bg-utama px-5 py-3 font-semibold text-white transition-colors hover:bg-utama-gelap"
+        className="inline-flex w-full items-center justify-center rounded-lg bg-utama px-5 py-3 font-semibold text-kontras transition-colors hover:bg-utama-gelap"
       >
         Pesan via WhatsApp
       </a>

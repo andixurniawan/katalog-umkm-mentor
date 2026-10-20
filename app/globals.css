@@ -20,6 +20,30 @@
   --color-harga-latar: #fbefd8;
 
   --color-bahaya: #b42318;
+
+  /* Warna teks di atas latar utama, harga, atau bahaya (tombol dan badge). */
+  --color-kontras: #ffffff;
+}
+
+/* Mode gelap: hanya mengganti nilai token, semua komponen ikut berubah. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-latar: #0f1512;
+  --color-permukaan: #19211d;
+  --color-garis: #2c3832;
+  --color-teks: #e8efeb;
+  --color-teks-lembut: #a3b2aa;
+
+  --color-utama: #4cb08a;
+  --color-utama-gelap: #3d9c79;
+
+  --color-harga: #f5c26b;
+  --color-harga-latar: #3a2a0c;
+
+  --color-bahaya: #f97066;
+
+  --color-kontras: #0a1a13;
 }
 
 html {

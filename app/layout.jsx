@@ -3,6 +3,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { KeranjangProvider } from "@/components/KeranjangProvider";
 import { FavoritProvider } from "@/components/FavoritProvider";
+
+// Dijalankan sebelum halaman tampil: pakai pilihan tersimpan, kalau belum ada ikuti pengaturan perangkat.
+const skripTema = `try{var t=localStorage.getItem("tema");if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.dataset.theme=t}catch(e){}`;
 import { toko } from "@/lib/toko";
 
 export const metadata = {
@@ -24,8 +27,9 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="id">
+    <html lang="id" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: skripTema }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link

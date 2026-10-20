@@ -21,7 +21,7 @@ export default function KartuProduk({ produk }) {
           />
           <div className="absolute left-2 top-2 flex flex-col items-start gap-1">
             {isHabis && (
-              <span className="rounded-md bg-bahaya px-2 py-0.5 text-xs font-bold text-white">
+              <span className="rounded-md bg-bahaya px-2 py-0.5 text-xs font-bold text-kontras">
                 Habis
               </span>
             )}

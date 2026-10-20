@@ -13,7 +13,7 @@ export default function LinkKeranjang() {
     >
       Keranjang
       {siap && totalItem > 0 && (
-        <span className="rounded-full bg-utama px-2 py-0.5 text-xs font-bold text-white">
+        <span className="rounded-full bg-utama px-2 py-0.5 text-xs font-bold text-kontras">
           {totalItem}
         </span>
       )}

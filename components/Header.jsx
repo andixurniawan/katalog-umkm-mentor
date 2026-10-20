@@ -1,5 +1,6 @@
 import Link from "next/link";
 import LinkKeranjang from "@/components/LinkKeranjang";
+import TombolTema from "@/components/TombolTema";
 import { toko } from "@/lib/toko";
 
 export default function Header() {
@@ -17,6 +18,7 @@ export default function Header() {
             Favorit
           </Link>
           <LinkKeranjang />
+          <TombolTema />
         </nav>
       </div>
     </header>

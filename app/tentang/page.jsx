@@ -47,7 +47,7 @@ export default function HalamanTentang() {
             href={linkWhatsApp}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center rounded-lg bg-utama px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-utama-gelap"
+            className="inline-flex items-center justify-center rounded-lg bg-utama px-4 py-2.5 text-sm font-semibold text-kontras transition-colors hover:bg-utama-gelap"
           >
             Hubungi via WhatsApp
           </a>

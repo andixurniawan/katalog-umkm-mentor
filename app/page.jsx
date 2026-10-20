@@ -215,7 +215,7 @@ export default async function HalamanKatalog({ searchParams }) {
                 href={buatTautan({ kategoriBaru: "" })}
                 className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors ${
                   !kategoriTerpilih
-                    ? "bg-utama text-white"
+                    ? "bg-utama text-kontras"
                     : "border border-garis bg-latar text-teks hover:border-utama hover:text-utama"
                 }`}
               >
@@ -230,7 +230,7 @@ export default async function HalamanKatalog({ searchParams }) {
                     href={buatTautan({ kategoriBaru: kat })}
                     className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors ${
                       isActive
-                        ? "bg-utama text-white"
+                        ? "bg-utama text-kontras"
                         : "border border-garis bg-latar text-teks hover:border-utama hover:text-utama"
                     }`}
                   >
@@ -258,7 +258,7 @@ export default async function HalamanKatalog({ searchParams }) {
                   href={buatTautan({ urutanBaru: item.id })}
                   className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors ${
                     isActive
-                      ? "bg-utama text-white"
+                      ? "bg-utama text-kontras"
                       : "border border-garis bg-latar text-teks hover:border-utama hover:text-utama"
                   }`}
                 >
@@ -347,7 +347,7 @@ export default async function HalamanKatalog({ searchParams }) {
                         href={buatTautan({ halamanBaru: nomor })}
                         className={`inline-flex h-9 min-w-9 items-center justify-center rounded-lg px-3 text-sm font-semibold transition-colors ${
                           isAktif
-                            ? "bg-utama text-white"
+                            ? "bg-utama text-kontras"
                             : "border border-garis bg-latar text-teks hover:border-utama hover:text-utama"
                         }`}
                       >

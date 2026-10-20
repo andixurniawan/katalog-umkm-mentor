@@ -104,7 +104,7 @@ export default function IsiKeranjang() {
           href={linkWhatsApp}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex w-full items-center justify-center rounded-lg bg-utama px-5 py-3 font-semibold text-white transition-colors hover:bg-utama-gelap"
+          className="inline-flex w-full items-center justify-center rounded-lg bg-utama px-5 py-3 font-semibold text-kontras transition-colors hover:bg-utama-gelap"
         >
           Pesan semua via WhatsApp
         </a>

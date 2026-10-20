@@ -447,3 +447,25 @@ Kriteria selesai:
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-25 Mode gelap
+
+**Prompt:**
+Sebagai pengunjung, saya ingin memilih tampilan gelap, supaya nyaman dilihat di malam hari.
+
+Bernilai 10 poin.
+
+Kriteria selesai:
+
+- Ada tombol untuk berpindah antara mode terang dan gelap. (4 poin)
+- Pilihan diingat setelah halaman dimuat ulang. (3 poin)
+- Semua teks tetap terbaca di kedua mode. (3 poin)
+
+**Hasil:**
+- `app/globals.css`: blok `:root[data-theme="dark"]` menimpa token warna, jadi semua komponen yang memakai token ikut berubah. Token baru `--color-kontras` untuk teks di atas latar `utama`, `harga`, dan `bahaya` (putih di mode terang, hampir hitam di mode gelap karena warna latarnya jadi lebih terang).
+- Semua `text-white` di komponen dan halaman diganti `text-kontras` agar tetap terbaca di kedua mode.
+- `components/TombolTema.jsx`: tombol bulan/matahari di header, pilihan disimpan di `localStorage` (kunci `tema`).
+- `app/layout.jsx`: skrip kecil di `<head>` memasang tema sebelum halaman tampil (tanpa berkedip). Jika belum ada pilihan tersimpan, mengikuti pengaturan perangkat.
+
+**Perbaikan:**
+Tidak ada perbaikan.

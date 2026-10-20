@@ -4,7 +4,7 @@ export default function Input({ label, name, type = "text", textarea = false, ..
 
   const fileKelas =
     type === "file"
-      ? " file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-utama file:text-white hover:file:bg-utama-gelap cursor-pointer"
+      ? " file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-utama file:text-kontras hover:file:bg-utama-gelap cursor-pointer"
       : "";
 
   const kelas = `${baseKelas}${fileKelas}`;

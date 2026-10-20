@@ -24,7 +24,7 @@ export default function TombolTambahKeranjang({
     <button
       type="button"
       onClick={handleClick}
-      className={`inline-flex items-center justify-center rounded-lg border border-utama px-4 py-2.5 text-sm font-semibold text-utama transition-colors hover:bg-utama hover:text-white ${className}`}
+      className={`inline-flex items-center justify-center rounded-lg border border-utama px-4 py-2.5 text-sm font-semibold text-utama transition-colors hover:bg-utama hover:text-kontras ${className}`}
       {...props}
     >
       <span aria-live="polite">{berhasil ? "Ditambahkan ✓" : "Tambah ke keranjang"}</span>
