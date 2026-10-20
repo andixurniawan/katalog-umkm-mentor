@@ -109,13 +109,13 @@ export default function FormProduk({ produk = {}, labelTombol, action, state, is
         />
       </div>
       <Input
-        label="Upload foto produk (disimpan ke Supabase Storage)"
+        label="Upload foto produk (JPG, PNG, WebP, atau GIF, maksimal 2 MB; ditambahkan ke link di bawah)"
         name="foto_file"
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp,image/gif"
       />
       <Input
-        label="Atau link/URL foto (opsional jika tidak upload file)"
+        label="Link foto (pisahkan dengan koma untuk beberapa foto)"
         name="foto_url"
         placeholder="https://... atau /produk/nama-file.svg"
         defaultValue={produk.foto_url}

@@ -2,7 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createServerAuthClient, createPublicClient } from "@/lib/supabase/server";
+import { createServerAuthClient } from "@/lib/supabase/server";
+import { unggahFoto } from "@/lib/unggah-foto";
 
 const BADGE_VALID = ["Baru", "Terlaris"];
 
@@ -102,41 +103,13 @@ export async function createProductAction(prevState, formData) {
     return { error: "Harga diskon harus berupa angka dan lebih kecil dari harga normal." };
   }
 
-  // Jika file foto diunggah, simpan ke Supabase Storage pada bucket "product"
+  // Foto yang diunggah ditambahkan ke link foto yang sudah ada (galeri US-18 tidak ikut terhapus).
   if (fotoFile && typeof fotoFile === "object" && fotoFile.size > 0) {
-    try {
-      const fileExt = fotoFile.name ? fotoFile.name.split(".").pop() : "jpg";
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      const arrayBuffer = await fotoFile.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-
-      const storageClient = createPublicClient() || supabaseAuth;
-
-      const { error: uploadError } = await storageClient
-        .storage
-        .from("product")
-        .upload(filePath, buffer, {
-          contentType: fotoFile.type || "image/jpeg",
-          upsert: true,
-        });
-
-      if (uploadError) {
-        console.error("Gagal mengunggah foto ke Supabase Storage:", uploadError.message);
-        return { error: "Gagal mengunggah foto ke bucket 'product': " + uploadError.message };
-      }
-
-      const { data: urlData } = storageClient
-        .storage
-        .from("product")
-        .getPublicUrl(filePath);
-
-      foto_url = urlData.publicUrl;
-    } catch (err) {
-      console.error("Error upload foto:", err);
-      return { error: "Gagal memproses file foto yang diunggah." };
+    const hasil = await unggahFoto(fotoFile);
+    if (hasil.error) {
+      return { error: hasil.error };
     }
+    foto_url = foto_url ? `${foto_url},${hasil.url}` : hasil.url;
   }
 
   const { error } = await supabaseAuth.from("produk").insert([
@@ -200,41 +173,13 @@ export async function updateProductAction(prevState, formData) {
     return { error: "Harga diskon harus berupa angka dan lebih kecil dari harga normal." };
   }
 
-  // Jika file foto baru diunggah, simpan ke Supabase Storage pada bucket "product"
+  // Foto yang diunggah ditambahkan ke link foto yang sudah ada (galeri US-18 tidak ikut terhapus).
   if (fotoFile && typeof fotoFile === "object" && fotoFile.size > 0) {
-    try {
-      const fileExt = fotoFile.name ? fotoFile.name.split(".").pop() : "jpg";
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      const arrayBuffer = await fotoFile.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-
-      const storageClient = createPublicClient() || supabaseAuth;
-
-      const { error: uploadError } = await storageClient
-        .storage
-        .from("product")
-        .upload(filePath, buffer, {
-          contentType: fotoFile.type || "image/jpeg",
-          upsert: true,
-        });
-
-      if (uploadError) {
-        console.error("Gagal mengunggah foto ke Supabase Storage:", uploadError.message);
-        return { error: "Gagal mengunggah foto ke bucket 'product': " + uploadError.message };
-      }
-
-      const { data: urlData } = storageClient
-        .storage
-        .from("product")
-        .getPublicUrl(filePath);
-
-      foto_url = urlData.publicUrl;
-    } catch (err) {
-      console.error("Error upload foto:", err);
-      return { error: "Gagal memproses file foto yang diunggah." };
+    const hasil = await unggahFoto(fotoFile);
+    if (hasil.error) {
+      return { error: hasil.error };
     }
+    foto_url = foto_url ? `${foto_url},${hasil.url}` : hasil.url;
   }
 
   const { error } = await supabaseAuth

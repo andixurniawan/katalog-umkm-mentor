@@ -530,3 +530,27 @@ Kriteria selesai:
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-29 Upload foto ke Supabase Storage
+
+**Prompt:**
+Sebagai admin, saya ingin mengunggah foto produk dari komputer, supaya tidak perlu mengisi link foto manual.
+
+Bernilai 15 poin.
+
+Kriteria selesai:
+
+- Form produk punya input file foto. (4 poin)
+- File diunggah ke Supabase Storage dari server, kunci tidak ada di browser. (4 poin)
+- URL foto tersimpan di produk dan foto tampil di katalog. (4 poin)
+- Tipe file (gambar) dan ukuran maksimal divalidasi dengan pesan error yang jelas. (3 poin)
+
+**Hasil:**
+- `lib/unggah-foto.js` (baru): validasi di server lalu unggah ke bucket `product` memakai `SUPABASE_SECRET_KEY`. Aturan: maksimal 2 MB; tipe JPG, PNG, WebP, GIF (SVG ditolak karena bisa memuat script); isi file dicocokkan dengan magic bytes sehingga file yang hanya diganti ekstensinya ditolak. Nama file dibuat sendiri, nama dari pengguna tidak dipakai. Hasilnya `{ url }` atau `{ error }` dengan pesan yang jelas.
+- `app/admin/actions.js`: kode upload yang diduplikasi di tambah dan ubah produk diganti satu panggilan `unggahFoto`. Cek login tetap dijalankan sebelum upload. Foto baru ditambahkan ke link foto yang sudah ada, jadi galeri US-18 tidak terhapus.
+- `components/FormProduk.jsx`: input file hanya menerima tipe yang diizinkan, label menjelaskan batasnya.
+- `next.config.mjs`: `serverActions.bodySizeLimit` dinaikkan ke 3 MB karena batas bawaan 1 MB menolak foto sebelum sampai ke kode.
+- `docs/schema.sql` bagian 7: membuat bucket `product` (publik, 2 MB, 4 tipe gambar). Jalankan di Supabase SQL Editor jika bucket belum ada.
+
+**Perbaikan:**
+Tidak ada perbaikan.
