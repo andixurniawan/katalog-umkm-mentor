@@ -1,6 +1,7 @@
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { KeranjangProvider } from "@/components/KeranjangProvider";
 import { toko } from "@/lib/toko";
 
 export const metadata = {
@@ -38,9 +39,11 @@ export default function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-title" content={toko.nama} />
       </head>
       <body className="flex min-h-screen flex-col font-sans antialiased">
-        <Header />
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4">{children}</main>
-        <Footer />
+        <KeranjangProvider>
+          <Header />
+          <main className="mx-auto w-full max-w-5xl flex-1 px-4">{children}</main>
+          <Footer />
+        </KeranjangProvider>
       </body>
     </html>
   );

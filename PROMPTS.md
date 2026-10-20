@@ -359,3 +359,29 @@ Kriteria selesai:
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-21 Keranjang, pesan semua via WhatsApp
+
+**Prompt:**
+Sebagai pengunjung, saya ingin memesan beberapa produk sekaligus, supaya tidak perlu mengirim pesan satu per satu.
+
+Bernilai 15 poin.
+
+Kriteria selesai:
+
+- Ada tombol "Tambah ke keranjang" di kartu atau halaman detail. (4 poin)
+- Keranjang bisa mengubah jumlah dan menghapus item, dan total harga benar. (4 poin)
+- Isi keranjang bertahan saat pindah halaman. (4 poin)
+- Satu tombol mengirim seluruh isi keranjang dalam satu pesan WhatsApp ke nomor di `lib/toko.js`. (3 poin)
+
+**Hasil:**
+- `components/KeranjangProvider.jsx`: state keranjang (context) yang disimpan di `localStorage` dengan kunci `keranjang`, sinkron antar tab. Item dibedakan per produk dan varian; item yang sama digabung jumlahnya. Jumlah dibatasi stok jika stok dilacak.
+- `components/TombolTambahKeranjang.jsx`: dipakai di `KartuProduk.jsx` (jumlah 1, disembunyikan jika habis) dan `TombolWhatsApp.jsx` (memakai jumlah dan varian yang dipilih).
+- `components/LinkKeranjang.jsx` di `Header.jsx`: tautan ke keranjang dengan jumlah item.
+- `app/keranjang/page.jsx` + `components/IsiKeranjang.jsx`: daftar item, tombol +/− dan hapus, total, kosongkan keranjang, dan tombol "Pesan semua via WhatsApp" yang mengirim satu pesan berisi seluruh item ke `toko.nomorWhatsApp`.
+- `app/layout.jsx` membungkus aplikasi dengan `KeranjangProvider`.
+- `KartuProduk.jsx`: elemen terluar diubah dari `Link` menjadi `div` karena tombol tidak boleh berada di dalam tautan.
+- Harga yang dipakai adalah harga aktif (diskon dari US-20) saat produk ditambahkan.
+
+**Perbaikan:**
+Tidak ada perbaikan.

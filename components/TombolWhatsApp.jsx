@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toko } from "@/lib/toko";
+import TombolTambahKeranjang from "@/components/TombolTambahKeranjang";
 import { formatRupiah, hargaAktif } from "@/lib/format";
 
 export default function TombolWhatsApp({ produk }) {
@@ -159,6 +160,7 @@ export default function TombolWhatsApp({ produk }) {
       >
         Pesan via WhatsApp
       </a>
+      <TombolTambahKeranjang produk={produk} jumlah={jumlahAngka} varian={varian} className="w-full py-3" />
     </div>
   );
 }
