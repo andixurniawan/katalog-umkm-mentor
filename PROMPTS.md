@@ -938,3 +938,15 @@ Tidak ada perbaikan.
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## Perbaikan: urut harga memakai harga setelah diskon (US-15)
+
+**Prompt:**
+[SENDIRI] "Termurah" dan "Termahal" mengurutkan dengan harga normal, padahal harga yang dibayar pembeli adalah harga diskon (US-20).
+
+**Hasil:**
+- `docs/schema.sql` bagian 17: kolom `produk.harga_efektif` (generated, stored) berisi harga diskon bila ada dan lebih kecil dari harga normal, selain itu harga normal. **Harus dijalankan di Supabase SQL Editor.**
+- `app/(beranda)/page.jsx`: urutan termurah/termahal memakai `harga_efektif` langsung di query database (syarat US-15), dengan cadangan ke kolom `harga` bila kolom itu belum dibuat. Diuji: sebelum SQL dijalankan, ketiga urutan tetap tampil.
+
+**Perbaikan:**
+Tidak ada perbaikan.

@@ -345,3 +345,14 @@ create policy "admin_ubah_varian" on public.varian
   for update to authenticated using (true) with check (true);
 create policy "admin_hapus_varian" on public.varian
   for delete to authenticated using (true);
+
+-- 17. Harga efektif untuk urut harga (US-15)
+-- Harga yang benar-benar dibayar: harga diskon bila ada dan lebih kecil dari harga normal, selain itu harga normal.
+-- Dipakai untuk mengurutkan "Termurah" dan "Termahal" di query, supaya produk diskon terurut sesuai harga jualnya.
+alter table public.produk
+  add column if not exists harga_efektif integer
+  generated always as (
+    case when harga_diskon is not null and harga_diskon < harga then harga_diskon else harga end
+  ) stored;
+
+create index if not exists produk_harga_efektif_idx on public.produk (harga_efektif);

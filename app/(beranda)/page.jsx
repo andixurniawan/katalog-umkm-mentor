@@ -69,10 +69,14 @@ export default async function HalamanKatalog({ searchParams }) {
     const dari = (halaman - 1) * perPage;
     const sampai = dari + perPage - 1;
 
-    // Urutan bawaan mengikuti kolom `urutan` (US-47). `denganUrutan = false` dipakai sebagai cadangan
-    // bila kolom itu belum dibuat di database, supaya katalog tetap tampil.
-    const ambilProduk = (denganUrutan, awal = dari, akhir = sampai) => {
+    // Urutan bawaan mengikuti kolom `urutan` (US-47) dan urut harga memakai `harga_efektif`.
+    // `denganKolomBaru = false` dipakai sebagai cadangan bila kolom itu belum dibuat di database,
+    // supaya katalog tetap tampil.
+    const ambilProduk = (denganKolomBaru, awal = dari, akhir = sampai) => {
       let query = supabase.from("produk").select("*", { count: "exact" }).eq("aktif", true);
+      // Urut harga memakai harga setelah diskon (kolom harga_efektif, bagian 17 schema.sql);
+      // bila kolom itu belum ada, memakai harga normal.
+      const kolomHarga = denganKolomBaru ? "harga_efektif" : "harga";
 
       if (kategoriTerpilih) {
         query = query.ilike("kategori", kategoriTerpilih);
@@ -83,13 +87,13 @@ export default async function HalamanKatalog({ searchParams }) {
       }
 
       if (urutan === "termurah") {
-        query = query.order("harga", { ascending: true }).order("id", { ascending: true });
+        query = query.order(kolomHarga, { ascending: true }).order("id", { ascending: true });
       } else if (urutan === "termahal") {
-        query = query.order("harga", { ascending: false }).order("id", { ascending: true });
+        query = query.order(kolomHarga, { ascending: false }).order("id", { ascending: true });
       } else if (urutan === "terbaru") {
         query = query.order("created_at", { ascending: false }).order("id", { ascending: false });
       } else {
-        if (denganUrutan) query = query.order("urutan", { ascending: true });
+        if (denganKolomBaru) query = query.order("urutan", { ascending: true });
         query = query.order("id", { ascending: true });
       }
 
@@ -97,7 +101,7 @@ export default async function HalamanKatalog({ searchParams }) {
     };
 
     let { data, count, error } = await ambilProduk(true);
-    if (error && /urutan/i.test(error.message || "")) {
+    if (error && /urutan|harga_efektif/i.test(error.message || "")) {
       ({ data, count, error } = await ambilProduk(false));
     }
 
