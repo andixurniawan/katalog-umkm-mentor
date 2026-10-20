@@ -218,7 +218,10 @@ Fitur pembuatan deskripsi otomatis menggunakan Gemini API berhasil diimplementas
 - Ketika ditekan, Server Action menerima nama dan kategori produk, lalu menghasilkan deskripsi yang menarik dan otomatis mengisi kolom textarea deskripsi secara langsung sehingga admin dapat meninjau atau menyuntingnya sebelum produk disimpan.
 
 **Perbaikan:**
-Tidak ada perbaikan.
+- Kunci Gemini langsung (`GEMINI_API_KEY`) ditolak Google ("API key not valid"), dan model `gemini-1.5-flash` sudah tidak tersedia. Panggilan LLM dipindah ke `lib/deskripsi-ai.js` dan disambungkan ke gateway 9router (kompatibel OpenAI) memakai model `gemini` (Gemini lewat 9router), dengan konfigurasi `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` di `.env.local` / environment variable server. Jika `LLM_*` kosong, tetap memakai Gemini API langsung (`GEMINI_API_KEY`, kunci di header `x-goog-api-key` bukan di URL).
+- 9router membalas `content-type: text/event-stream` (satu JSON + `data: [DONE]`) kalau `stream` tidak diminta, sehingga `response.json()` gagal. Diperbaiki dengan `stream: false` dan parser yang tahan terhadap kedua bentuk.
+- Batas waktu 25 detik, dan pesan error yang jelas untuk kunci ditolak, timeout, dan konfigurasi kosong.
+- Kunci tidak ada di kode, `.env.example`, maupun bundle browser; hanya di `.env.local` (di-`.gitignore`) dan environment variable Vercel.
 
 ## US-15 Urutkan produk (Bonus lanjutan)
 

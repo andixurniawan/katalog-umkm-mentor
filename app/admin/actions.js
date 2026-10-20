@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createServerAuthClient } from "@/lib/supabase/server";
 import { unggahFoto } from "@/lib/unggah-foto";
 import { validasiProduk } from "@/lib/validasi-produk";
+import { buatDeskripsiAi } from "@/lib/deskripsi-ai";
 
 export async function loginAction(prevState, formData) {
   const email = formData.get("email");
@@ -244,68 +245,7 @@ export async function generateDescriptionAction({ nama, kategori }) {
     };
   }
 
-  const apiKey =
-    process.env.GEMINI_API_KEY ||
-    process.env.GOOGLE_API_KEY ||
-    process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-
-  if (!apiKey) {
-    return {
-      error:
-        "Kunci Gemini API (GEMINI_API_KEY) belum dikonfigurasi di file .env.local atau environment variable server.",
-    };
-  }
-
-  const prompt = `Anda adalah asisten pembuat konten untuk katalog UMKM. Buatlah deskripsi produk yang menarik, profesional, singkat (sekitar 2 sampai 4 kalimat), dan persuasif dalam bahasa Indonesia.
-Nama produk: ${namaProduk}
-${kategoriProduk ? `Kategori produk: ${kategoriProduk}` : ""}
-
-Tulis HANYA deskripsi produk tersebut, tanpa tanda kutip, tanpa pembuka/penutup, dan tanpa format markdown berlebih.`;
-
-  const models = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-2.5-flash"];
-  let lastError = null;
-
-  for (const model of models) {
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-              temperature: 0.7,
-              maxOutputTokens: 300,
-            },
-          }),
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-        if (text) {
-          return { deskripsi: text };
-        }
-      } else {
-        const errJson = await response.json().catch(() => null);
-        lastError =
-          errJson?.error?.message || `HTTP ${response.status} ${response.statusText}`;
-        if (response.status !== 404) {
-          break;
-        }
-      }
-    } catch (err) {
-      lastError = err.message;
-    }
-  }
-
-  return {
-    error: "Gagal membuat deskripsi dengan AI: " + (lastError || "Respon kosong dari API."),
-  };
+  return buatDeskripsiAi({ nama: namaProduk, kategori: kategoriProduk });
 }
 
 // ---- Kategori (US-31) ----
