@@ -690,3 +690,16 @@ Kriteria selesai:
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-36 Terakhir dilihat
+
+**Prompt:**
+Sebagai pengunjung, saya ingin melihat produk yang baru saya buka, supaya mudah kembali ke sana. Bernilai 5 poin. Kriteria: produk yang dibuka tersimpan di browser dengan batas jumlah tertentu (3 poin); bagian "Terakhir dilihat" tampil di beranda dan tidak muncul bila masih kosong (2 poin).
+
+**Hasil:**
+- `lib/terakhir-dilihat.js` (baru): baca dan simpan daftar di `localStorage` (kunci `terakhir-dilihat`), maksimal 8 produk, yang terbaru di depan dan tanpa duplikat. Hanya kolom yang dipakai kartu yang disimpan.
+- `components/CatatDilihat.jsx` (baru) dipasang di halaman detail untuk mencatat produk yang dibuka.
+- `components/TerakhirDilihat.jsx` (baru) di beranda menampilkan 4 produk terakhir dengan `KartuProduk`, dan mengembalikan `null` bila daftar kosong.
+
+**Perbaikan:**
+Tidak ada perbaikan.

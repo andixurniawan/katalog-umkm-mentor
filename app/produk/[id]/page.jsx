@@ -6,6 +6,7 @@ import GaleriFoto from "@/components/GaleriFoto";
 import TombolWhatsApp from "@/components/TombolWhatsApp";
 import TombolBagikan from "@/components/TombolBagikan";
 import TombolFavorit from "@/components/TombolFavorit";
+import CatatDilihat from "@/components/CatatDilihat";
 import HargaProduk from "@/components/HargaProduk";
 import BadgeProduk from "@/components/BadgeProduk";
 import { createPublicClient } from "@/lib/supabase/server";
@@ -92,6 +93,7 @@ export default async function HalamanDetailProduk({ params }) {
 
   return (
     <div className="py-8 md:py-12">
+      <CatatDilihat produk={produk} />
       <article className="grid gap-8 md:grid-cols-2">
         <GaleriFoto fotoUrl={produk.foto_url} nama={produk.nama} />
         <div className="flex flex-col gap-4">
