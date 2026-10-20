@@ -316,3 +316,32 @@ alter table public.produk alter column urutan set not null;
 grant usage, select on sequence public.produk_urutan_seq to authenticated, service_role;
 
 create index if not exists produk_urutan_idx on public.produk (urutan, id);
+
+-- 16. Varian harga per produk (US-48)
+-- Contoh: ukuran Kecil / Sedang / Besar dengan harga berbeda. Dibaca pengunjung lewat server
+-- (SUPABASE_SECRET_KEY); admin yang login mengelola. Nama varian tidak boleh kembar dalam satu produk.
+create table if not exists public.varian (
+  id bigint generated always as identity primary key,
+  produk_id bigint not null references public.produk (id) on delete cascade,
+  nama text not null check (char_length(btrim(nama)) between 1 and 50),
+  harga integer not null check (harga > 0),
+  created_at timestamptz not null default now()
+);
+
+create unique index if not exists varian_nama_unik on public.varian (produk_id, lower(nama));
+
+alter table public.varian enable row level security;
+
+drop policy if exists "admin_baca_varian" on public.varian;
+drop policy if exists "admin_tambah_varian" on public.varian;
+drop policy if exists "admin_ubah_varian" on public.varian;
+drop policy if exists "admin_hapus_varian" on public.varian;
+
+create policy "admin_baca_varian" on public.varian
+  for select to authenticated using (true);
+create policy "admin_tambah_varian" on public.varian
+  for insert to authenticated with check (true);
+create policy "admin_ubah_varian" on public.varian
+  for update to authenticated using (true) with check (true);
+create policy "admin_hapus_varian" on public.varian
+  for delete to authenticated using (true);

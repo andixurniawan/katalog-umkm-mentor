@@ -6,7 +6,10 @@ import TombolTambahKeranjang from "@/components/TombolTambahKeranjang";
 import { catatKlikWhatsAppAction } from "@/app/produk/[id]/catat-klik";
 import { formatRupiah, hargaAktif } from "@/lib/format";
 
-export default function TombolWhatsApp({ produk }) {
+// `daftarVarian` (US-48) berisi varian ber-harga dari database. Jika ada, pengunjung wajib memilih salah satu
+// (state ada di PanelPembelian supaya harga di atas halaman ikut berubah). Jika tidak ada, varian
+// berupa teks bebas seperti sebelumnya.
+export default function TombolWhatsApp({ produk, daftarVarian = [], varianId = null, onPilihVarian = () => {} }) {
   const toko = useToko();
   if (!produk) return null;
 
@@ -16,12 +19,17 @@ export default function TombolWhatsApp({ produk }) {
   const isHabis = produk.stok === 0;
 
   const jumlahAngka = Math.max(1, Number(jumlah) || 1);
-  const hargaSatuan = hargaAktif(produk);
+  const adaVarianHarga = daftarVarian.length > 0;
+  const varianHarga = daftarVarian.find((v) => v.id === varianId) || null;
+  // Harga varian menggantikan harga produk (termasuk diskon produk).
+  const produkEfektif = varianHarga ? { ...produk, harga: varianHarga.harga, harga_diskon: null } : produk;
+  const namaVarian = varianHarga ? varianHarga.nama : varian.trim();
+  const hargaSatuan = hargaAktif(produkEfektif);
   const hargaTotal = hargaSatuan * jumlahAngka;
 
   let pesan = `Halo, saya mau pesan ${produk.nama}`;
-  if (varian.trim()) {
-    pesan += ` (varian: ${varian.trim()})`;
+  if (namaVarian) {
+    pesan += ` (varian: ${namaVarian})`;
   }
   if (jumlahAngka > 1) {
     pesan += ` dengan jumlah ${jumlahAngka} pcs dan total harga ${formatRupiah(hargaTotal)} (satuan ${formatRupiah(hargaSatuan)})`;
@@ -61,46 +69,71 @@ export default function TombolWhatsApp({ produk }) {
     <div className="flex flex-col gap-4 rounded-xl border border-garis bg-permukaan/30 p-4 sm:p-5">
       <div className="flex flex-col gap-4">
         {/* Pilihan Varian */}
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="varian" className="text-sm font-semibold text-teks">
-            Pilihan varian <span className="font-normal text-teks-lembut">(opsional)</span>
-          </label>
-          <input
-            id="varian"
-            name="varian"
-            list="daftar-varian"
-            type="text"
-            value={varian}
-            onChange={(e) => setVarian(e.target.value)}
-            placeholder="Ketik atau pilih varian (rasa, ukuran, dll.)"
-            className="w-full rounded-lg border border-garis bg-latar px-3 py-2 text-sm text-teks placeholder:text-teks-lembut focus:border-utama focus:outline-none"
-          />
-          <datalist id="daftar-varian">
-            {daftarPilihan.map((item) => (
-              <option key={item} value={item} />
-            ))}
-          </datalist>
-
-          <div className="flex flex-wrap gap-1.5 pt-0.5">
-            {daftarPilihan.map((item) => {
-              const isDipilih = varian === item;
-              return (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => setVarian(isDipilih ? "" : item)}
-                  className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${
-                    isDipilih
-                      ? "bg-utama text-kontras"
-                      : "border border-garis bg-latar text-teks-lembut hover:border-utama hover:text-utama"
-                  }`}
+        {adaVarianHarga ? (
+          <fieldset className="flex flex-col gap-1.5">
+            <legend className="text-sm font-semibold text-teks">Pilih varian</legend>
+            <div className="flex flex-wrap gap-2">
+              {daftarVarian.map((v) => (
+                <label
+                  key={v.id}
+                  className="cursor-pointer rounded-lg border border-garis bg-latar px-3 py-2 text-sm has-[:checked]:border-utama has-[:checked]:bg-utama has-[:checked]:text-kontras"
                 >
-                  {item}
-                </button>
-              );
-            })}
+                  <input
+                    type="radio"
+                    name="varian_harga"
+                    value={v.id}
+                    checked={v.id === varianId}
+                    onChange={() => onPilihVarian(v.id)}
+                    className="sr-only"
+                  />
+                  <span className="font-semibold">{v.nama}</span>
+                  <span className="ml-2 opacity-80">{formatRupiah(v.harga)}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        ) : (
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="varian" className="text-sm font-semibold text-teks">
+              Pilihan varian <span className="font-normal text-teks-lembut">(opsional)</span>
+            </label>
+            <input
+              id="varian"
+              name="varian"
+              list="daftar-varian"
+              type="text"
+              value={varian}
+              onChange={(e) => setVarian(e.target.value)}
+              placeholder="Ketik atau pilih varian (rasa, ukuran, dll.)"
+              className="w-full rounded-lg border border-garis bg-latar px-3 py-2 text-sm text-teks placeholder:text-teks-lembut focus:border-utama focus:outline-none"
+            />
+            <datalist id="daftar-varian">
+              {daftarPilihan.map((item) => (
+                <option key={item} value={item} />
+              ))}
+            </datalist>
+
+            <div className="flex flex-wrap gap-1.5 pt-0.5">
+              {daftarPilihan.map((item) => {
+                const isDipilih = varian === item;
+                return (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => setVarian(isDipilih ? "" : item)}
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${
+                      isDipilih
+                        ? "bg-utama text-kontras"
+                        : "border border-garis bg-latar text-teks-lembut hover:border-utama hover:text-utama"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Pilihan Jumlah */}
         <div className="flex items-center justify-between gap-4 border-t border-garis/60 pt-3">
@@ -166,7 +199,7 @@ export default function TombolWhatsApp({ produk }) {
       >
         Pesan via WhatsApp
       </a>
-      <TombolTambahKeranjang produk={produk} jumlah={jumlahAngka} varian={varian} className="w-full py-3" />
+      <TombolTambahKeranjang produk={produkEfektif} jumlah={jumlahAngka} varian={namaVarian} className="w-full py-3" />
     </div>
   );
 }

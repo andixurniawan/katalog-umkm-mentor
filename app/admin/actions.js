@@ -706,3 +706,71 @@ export async function geserProdukAction(prevState, formData) {
   revalidatePath("/");
   return { success: true };
 }
+
+// ---- Varian harga per produk (US-48) ----
+
+const VARIAN_MAKSIMAL_PER_PRODUK = 20;
+
+export async function tambahVarianAction(prevState, formData) {
+  const { supabase } = await periksaAdmin();
+  if (!supabase) return { error: "Anda harus login terlebih dahulu." };
+
+  const produkId = formData.get("produk_id")?.toString() || "";
+  const nama = formData.get("nama")?.toString().trim().replace(/\s+/g, " ") || "";
+  const hargaMentah = formData.get("harga")?.toString().trim() || "";
+  const values = { nama, harga: hargaMentah };
+  const errors = {};
+
+  if (!/^\d+$/.test(produkId)) return { error: "ID produk tidak valid." };
+  if (!nama) errors.nama = "Nama varian wajib diisi.";
+  else if (nama.length > 50) errors.nama = "Nama varian maksimal 50 karakter.";
+  if (!/^\d+$/.test(hargaMentah) || Number(hargaMentah) < 1) {
+    errors.harga = "Harga harus berupa angka bulat lebih dari 0, tanpa titik atau huruf.";
+  } else if (Number(hargaMentah) > 2_000_000_000) {
+    errors.harga = "Harga terlalu besar.";
+  }
+  if (Object.keys(errors).length > 0) return { error: "Periksa kembali isian yang ditandai.", errors, values };
+
+  const { count, error: errorHitung } = await supabase
+    .from("varian")
+    .select("id", { count: "exact", head: true })
+    .eq("produk_id", produkId);
+  if (errorHitung) {
+    console.error("Gagal memeriksa varian:", errorHitung.message);
+    return { error: "Gagal memeriksa varian. Pastikan bagian 16 di docs/schema.sql sudah dijalankan.", values };
+  }
+  if (count >= VARIAN_MAKSIMAL_PER_PRODUK) {
+    return { error: `Maksimal ${VARIAN_MAKSIMAL_PER_PRODUK} varian per produk.`, values };
+  }
+
+  const { error } = await supabase.from("varian").insert({ produk_id: produkId, nama, harga: Number(hargaMentah) });
+  if (error) {
+    if (error.code === "23505") return { errors: { nama: `Varian "${nama}" sudah ada di produk ini.` }, values };
+    console.error("Gagal menambah varian:", error.message);
+    return { error: "Gagal menambah varian: " + error.message, values };
+  }
+
+  revalidatePath(`/admin/produk/${produkId}/ubah`);
+  revalidatePath(`/produk/${produkId}`);
+  return { success: `Varian "${nama}" ditambahkan.`, waktu: Date.now() };
+}
+
+export async function hapusVarianAction(prevState, formData) {
+  const { supabase } = await periksaAdmin();
+  if (!supabase) return { error: "Anda harus login terlebih dahulu." };
+
+  const id = formData.get("id")?.toString() || "";
+  if (!/^\d+$/.test(id)) return { error: "ID varian tidak valid." };
+
+  const { data, error } = await supabase.from("varian").delete().eq("id", id).select("produk_id").maybeSingle();
+  if (error) {
+    console.error("Gagal menghapus varian:", error.message);
+    return { error: "Gagal menghapus varian: " + error.message };
+  }
+
+  if (data) {
+    revalidatePath(`/admin/produk/${data.produk_id}/ubah`);
+    revalidatePath(`/produk/${data.produk_id}`);
+  }
+  return { success: true };
+}

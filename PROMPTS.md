@@ -857,3 +857,18 @@ Sebagai admin, saya ingin mengatur urutan produk, supaya produk unggulan tampil 
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-48 Varian harga per ukuran
+
+**Prompt:**
+Sebagai pengunjung, saya ingin memilih ukuran dengan harga yang sesuai, supaya saya memesan yang tepat. Bernilai 15 poin. Kriteria: tabel varian di database (produk, nama varian, harga) (4); admin bisa mengelola varian per produk (4); halaman detail menampilkan pilihan varian dan harga berubah sesuai pilihan (4); pesan WhatsApp memuat varian dan harga yang dipilih (3).
+
+**Hasil:**
+- `docs/schema.sql` bagian 16: tabel `varian` (`produk_id`, `nama`, `harga`) dengan nama unik per produk, hapus ikut terhapus bersama produk, dan RLS: baca/tulis hanya admin. **Harus dijalankan di Supabase SQL Editor.**
+- Admin: `components/KelolaVarian.jsx` di halaman Ubah produk, aksi `tambahVarianAction` (nama wajib maks 50, harga angka bulat > 0, maks 20 varian per produk, nama kembar ditolak) dan `hapusVarianAction`, keduanya dengan `periksaAdmin()`.
+- Publik: `lib/varian.js` mengambil varian (kosong bila tabel belum ada). `components/PanelPembelian.jsx` (baru, client) menyimpan varian terpilih sehingga harga besar di atas halaman berubah; deskripsi tetap dirender server lewat `children`. `components/TombolWhatsApp.jsx` menampilkan pilihan varian sebagai tombol radio berisi nama dan harga, menghitung total dari harga varian, dan menuliskan "(varian: Besar)" serta harga/total varian di pesan WhatsApp. Tombol "Tambah ke keranjang" ikut membawa varian dan harganya.
+- Produk tanpa varian tetap memakai pilihan varian teks bebas seperti sebelumnya (diuji: halaman produk tetap tampil walau tabel belum dibuat).
+- Harga varian menggantikan harga produk, termasuk diskonnya.
+
+**Perbaikan:**
+Tidak ada perbaikan.

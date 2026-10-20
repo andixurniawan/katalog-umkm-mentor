@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import NavAdmin from "@/components/NavAdmin";
 import { createServerAuthClient } from "@/lib/supabase/server";
+import KelolaVarian from "@/components/KelolaVarian";
 import FormUbahProduk from "./FormUbahProduk";
 
 export const dynamic = "force-dynamic";
@@ -32,11 +33,18 @@ export default async function HalamanUbahProduk({ params }) {
     .select("nama")
     .order("nama", { ascending: true });
 
+  const { data: daftarVarian, error: errorVarian } = await supabase
+    .from("varian")
+    .select("*")
+    .eq("produk_id", produk.id)
+    .order("harga", { ascending: true });
+
   return (
     <div className="flex flex-col gap-6 py-8">
       <NavAdmin />
       <h1 className="text-2xl font-extrabold">Ubah produk</h1>
       <FormUbahProduk produk={produk} daftarKategori={(kategori || []).map((k) => k.nama)} />
+      <KelolaVarian produkId={produk.id} daftar={daftarVarian || []} error={Boolean(errorVarian)} />
     </div>
   );
 }

@@ -3,17 +3,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import KartuProduk from "@/components/KartuProduk";
 import GaleriFoto from "@/components/GaleriFoto";
-import TombolWhatsApp from "@/components/TombolWhatsApp";
 import TombolBagikan from "@/components/TombolBagikan";
 import TombolBandingkan from "@/components/TombolBandingkan";
 import TombolFavorit from "@/components/TombolFavorit";
 import CatatDilihat from "@/components/CatatDilihat";
 import Bintang from "@/components/Bintang";
 import FormUlasan from "@/components/FormUlasan";
-import HargaProduk from "@/components/HargaProduk";
+import PanelPembelian from "@/components/PanelPembelian";
 import BadgeProduk from "@/components/BadgeProduk";
 import { createPublicClient } from "@/lib/supabase/server";
 import { ekstrakDaftarFoto } from "@/lib/foto";
+import { ambilVarianProduk } from "@/lib/varian";
 import { ambilUlasanProduk } from "@/lib/ulasan";
 import { ambilToko } from "@/lib/pengaturan-toko";
 
@@ -96,7 +96,10 @@ export default async function HalamanDetailProduk({ params }) {
     }
   }
 
-  const ulasan = await ambilUlasanProduk(supabase, produk.id);
+  const [ulasan, daftarVarian] = await Promise.all([
+    ambilUlasanProduk(supabase, produk.id),
+    ambilVarianProduk(supabase, produk.id),
+  ]);
 
   return (
     <div className="py-8 md:py-12">
@@ -125,11 +128,11 @@ export default async function HalamanDetailProduk({ params }) {
               </span>
             </a>
           )}
-          <HargaProduk produk={produk} besar />
-          <p className="max-w-prose leading-relaxed text-teks-lembut">
-            {produk.deskripsi}
-          </p>
-          <TombolWhatsApp produk={produk} />
+          <PanelPembelian produk={produk} daftarVarian={daftarVarian}>
+            <p className="max-w-prose leading-relaxed text-teks-lembut">
+              {produk.deskripsi}
+            </p>
+          </PanelPembelian>
           <div className="flex flex-wrap items-center gap-3">
             <TombolFavorit produk={produk} denganTeks />
             <TombolBagikan nama={produk.nama} />
