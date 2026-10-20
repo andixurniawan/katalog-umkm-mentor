@@ -6,6 +6,7 @@ import { createServerAuthClient } from "@/lib/supabase/server";
 import { unggahFoto } from "@/lib/unggah-foto";
 import { validasiProduk } from "@/lib/validasi-produk";
 import { buatDeskripsiAi } from "@/lib/deskripsi-ai";
+import { validasiBanner } from "@/lib/validasi-banner";
 
 export async function loginAction(prevState, formData) {
   const email = formData.get("email");
@@ -410,4 +411,74 @@ export async function deleteUlasanAction(formData) {
 
   revalidatePath("/admin/ulasan");
   if (data) revalidatePath(`/produk/${data.produk_id}`);
+}
+
+// ---- Banner promo (US-42) ----
+
+export async function simpanBannerAction(prevState, formData) {
+  const { supabase } = await periksaAdmin();
+  if (!supabase) return { error: "Anda harus login terlebih dahulu." };
+
+  const id = formData.get("id")?.toString() || "";
+  const { data, values, errors } = validasiBanner(formData);
+  if (Object.keys(errors).length > 0) {
+    return { error: "Periksa kembali isian yang ditandai.", errors, values };
+  }
+
+  // Gambar yang diunggah menggantikan link gambar yang diketik.
+  const berkas = formData.get("gambar_file");
+  if (berkas && typeof berkas === "object" && berkas.size > 0) {
+    const hasil = await unggahFoto(berkas);
+    if (hasil.error) return { errors: { gambar_file: hasil.error }, values };
+    data.gambar_url = hasil.url;
+  }
+
+  const { error } = id
+    ? await supabase.from("banner").update(data).eq("id", id)
+    : await supabase.from("banner").insert(data);
+
+  if (error) {
+    console.error("Gagal menyimpan banner:", error.message);
+    return { error: "Gagal menyimpan banner: " + error.message, values };
+  }
+
+  revalidatePath("/admin/banner");
+  revalidatePath("/");
+  return { success: id ? "Banner diperbarui." : "Banner ditambahkan.", waktu: Date.now() };
+}
+
+export async function toggleBannerAction(prevState, formData) {
+  const { supabase } = await periksaAdmin();
+  if (!supabase) return { error: "Anda harus login terlebih dahulu." };
+
+  const id = formData.get("id");
+  if (!id) return { error: "ID banner tidak valid." };
+
+  const aktif = formData.get("aktif") === "true";
+  const { error } = await supabase.from("banner").update({ aktif }).eq("id", id);
+  if (error) {
+    console.error("Gagal mengubah status banner:", error.message);
+    return { error: "Gagal mengubah status banner: " + error.message };
+  }
+
+  revalidatePath("/admin/banner");
+  revalidatePath("/");
+  return { success: true };
+}
+
+export async function deleteBannerAction(formData) {
+  const { supabase } = await periksaAdmin();
+  if (!supabase) return;
+
+  const id = formData.get("id");
+  if (!id) return;
+
+  const { error } = await supabase.from("banner").delete().eq("id", id);
+  if (error) {
+    console.error("Gagal menghapus banner:", error.message);
+    return;
+  }
+
+  revalidatePath("/admin/banner");
+  revalidatePath("/");
 }

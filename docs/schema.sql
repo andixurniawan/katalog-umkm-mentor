@@ -224,3 +224,31 @@ create or replace view public.klik_whatsapp_per_produk
   select produk_id, count(*)::int as jumlah
   from public.klik_whatsapp
   group by produk_id;
+
+-- 12. Banner promo di beranda (US-42)
+-- Pengunjung membaca banner aktif lewat server (SUPABASE_SECRET_KEY); admin yang login mengelola.
+create table if not exists public.banner (
+  id bigint generated always as identity primary key,
+  judul text not null check (char_length(btrim(judul)) between 1 and 100),
+  teks text check (teks is null or char_length(teks) <= 300),
+  gambar_url text,
+  tautan text,
+  aktif boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+alter table public.banner enable row level security;
+
+drop policy if exists "admin_baca_banner" on public.banner;
+drop policy if exists "admin_tambah_banner" on public.banner;
+drop policy if exists "admin_ubah_banner" on public.banner;
+drop policy if exists "admin_hapus_banner" on public.banner;
+
+create policy "admin_baca_banner" on public.banner
+  for select to authenticated using (true);
+create policy "admin_tambah_banner" on public.banner
+  for insert to authenticated with check (true);
+create policy "admin_ubah_banner" on public.banner
+  for update to authenticated using (true) with check (true);
+create policy "admin_hapus_banner" on public.banner
+  for delete to authenticated using (true);

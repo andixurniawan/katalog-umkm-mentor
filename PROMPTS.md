@@ -770,3 +770,17 @@ Sebagai admin, saya ingin melihat produk yang paling sering dipesan, supaya saya
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-42 Banner promo di beranda
+
+**Prompt:**
+Sebagai admin, saya ingin memasang banner promo, supaya pengunjung tahu ada penawaran. Bernilai 10 poin. Kriteria: admin bisa membuat dan mengubah banner (judul, teks, gambar, tautan), login diperiksa di server (4); beranda menampilkan banner aktif dari database (3); banner bisa dinonaktifkan dan yang nonaktif tidak tampil (3).
+
+**Hasil:**
+- `docs/schema.sql` bagian 12: tabel `banner` (judul, teks, gambar_url, tautan, aktif) dengan RLS: hanya admin yang login. **Harus dijalankan di Supabase SQL Editor.**
+- `app/admin/banner/page.jsx` (baru) + `components/FormBanner.jsx` (tambah/ubah, gambar boleh link atau unggahan lewat `unggahFoto` US-29) + `components/BarisBanner.jsx` (aktifkan/nonaktifkan, hapus, ubah). Tautan "Banner" di `NavAdmin`.
+- `app/admin/actions.js`: `simpanBannerAction`, `toggleBannerAction`, `deleteBannerAction`, semuanya lewat `periksaAdmin()`. Validasi di `lib/validasi-banner.js` (judul wajib maks 100, teks maks 300, link gambar dan tautan hanya `http(s)://` atau path `/...` lewat `lib/link.js`).
+- `app/page.jsx` mengambil satu banner `aktif = true` terbaru dan `components/BannerPromo.jsx` menampilkannya (bisa diklik bila ada tautan). Tidak ada banner aktif, atau tabel belum ada: beranda tampil tanpa banner.
+
+**Perbaikan:**
+Tidak ada perbaikan.

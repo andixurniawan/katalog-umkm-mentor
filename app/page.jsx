@@ -2,6 +2,7 @@ import Link from "next/link";
 import KartuProduk from "@/components/KartuProduk";
 import Input from "@/components/Input";
 import Tombol from "@/components/Tombol";
+import BannerPromo from "@/components/BannerPromo";
 import TerakhirDilihat from "@/components/TerakhirDilihat";
 import { toko } from "@/lib/toko";
 import { createPublicClient } from "@/lib/supabase/server";
@@ -24,6 +25,7 @@ export default async function HalamanKatalog({ searchParams }) {
   const perPage = Math.max(1, parseInt(perPageParam || "12", 10) || 12);
 
   const supabase = createPublicClient();
+  let banner = null;
   let daftarProduk = null;
   let daftarKategori = [];
   let pesanError = null;
@@ -34,6 +36,16 @@ export default async function HalamanKatalog({ searchParams }) {
     pesanError =
       "Gagal terhubung ke database. Pastikan SUPABASE_URL dan SUPABASE_SECRET_KEY sudah diatur.";
   } else {
+    // Banner aktif terbaru; bila tabel belum ada atau error, beranda tetap tampil tanpa banner.
+    const { data: dataBanner } = await supabase
+      .from("banner")
+      .select("*")
+      .eq("aktif", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    banner = dataBanner || null;
+
     // Ambil semua kategori unik dari produk untuk pilihan filter
     const { data: dataKategori, error: errorKategori } = await supabase
       .from("produk")
@@ -145,6 +157,8 @@ export default async function HalamanKatalog({ searchParams }) {
         <p className="mt-3 max-w-xl text-lg text-teks-lembut">{toko.tagline}</p>
         <p className="mt-4 text-sm text-teks-lembut">{toko.jamBuka}</p>
       </section>
+
+      <BannerPromo banner={banner} />
 
       <TerakhirDilihat />
 
