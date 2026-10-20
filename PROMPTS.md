@@ -554,3 +554,24 @@ Kriteria selesai:
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-30 Dashboard ringkasan admin
+
+**Prompt:**
+Sebagai admin, saya ingin melihat ringkasan toko, supaya saya tahu kondisi katalog sekilas.
+
+Bernilai 10 poin.
+
+Kriteria selesai:
+
+- `/admin` menampilkan jumlah produk dari database. (4 poin)
+- Menampilkan jumlah produk per kategori. (3 poin)
+- Hanya bisa dibuka setelah login. (3 poin)
+
+**Hasil:**
+- `components/RingkasanAdmin.jsx` (baru): kartu "Total produk" dan daftar "Produk per kategori" dengan bar proporsi. Kategori diurutkan dari yang terbanyak; produk tanpa kategori dihitung sebagai "Tanpa kategori".
+- `app/admin/page.jsx`: mengambil kolom `kategori` dari tabel `produk` (bersamaan dengan daftar produk lewat `Promise.all`) dan menghitung total serta jumlah per kategori. Query dibuat terpisah dari daftar produk supaya angkanya tetap benar saat daftar nanti dipaginasi (US-33). Jika query gagal, tampil pesan error, bukan angka 0.
+- Akses: `/admin` sudah dilindungi `proxy.js` dan pemeriksaan `getUser()` di halaman (redirect ke `/admin/login`), tidak ada perubahan.
+
+**Perbaikan:**
+Tidak ada perbaikan.
