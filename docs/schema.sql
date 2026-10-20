@@ -167,3 +167,8 @@ alter table public.produk
   add constraint produk_kategori_fkey
   foreign key (kategori) references public.kategori (nama)
   on update cascade on delete restrict;
+
+-- 9. Status aktif produk (US-32 Aktif atau nonaktifkan produk)
+-- true = tampil di katalog publik; false = disembunyikan (data tetap ada).
+alter table public.produk
+  add column if not exists aktif boolean not null default true;

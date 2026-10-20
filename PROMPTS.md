@@ -599,3 +599,25 @@ Kriteria selesai:
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-32 Aktif atau nonaktifkan produk
+
+**Prompt:**
+Sebagai admin, saya ingin menyembunyikan produk tanpa menghapusnya, supaya bisa ditampilkan lagi nanti.
+
+Bernilai 10 poin.
+
+Kriteria selesai:
+
+- Ada tombol aktif atau nonaktif untuk produk di halaman admin. (4 poin)
+- Produk nonaktif tidak muncul di katalog publik, dan halaman detailnya menampilkan "tidak ditemukan". (3 poin)
+- Aksinya memeriksa login di server. (3 poin)
+
+**Hasil:**
+- `docs/schema.sql` bagian 9: kolom `aktif boolean not null default true` di tabel `produk`. Jalankan di Supabase SQL Editor sebelum aplikasi baru dipakai, karena query publik sekarang menyaring kolom ini.
+- `components/TombolAktif.jsx` dan `components/TabelProduk.jsx`: tombol "Nonaktifkan" / "Aktifkan" per baris di `/admin`, baris nonaktif diberi label dan warna redup.
+- `app/admin/actions.js`: `toggleProductActiveAction` memeriksa login di server dan menerima status tujuan dari form (bukan membalik status), jadi klik ganda tidak mengubah hasil.
+- Semua query publik menyaring `aktif = true`: katalog dan daftar kategori filter di `app/page.jsx`, detail produk dan produk terkait di `app/produk/[id]/page.jsx` (produk nonaktif memanggil `notFound()`, termasuk metadata), `app/sitemap.js`, dan `app/favorit/actions.js`. Daftar admin tetap menampilkan semua produk.
+
+**Perbaikan:**
+Tidak ada perbaikan.

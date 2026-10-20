@@ -36,7 +36,8 @@ export default async function HalamanKatalog({ searchParams }) {
     // Ambil semua kategori unik dari produk untuk pilihan filter
     const { data: dataKategori, error: errorKategori } = await supabase
       .from("produk")
-      .select("kategori");
+      .select("kategori")
+      .eq("aktif", true);
 
     if (!errorKategori && dataKategori) {
       daftarKategori = Array.from(
@@ -49,7 +50,10 @@ export default async function HalamanKatalog({ searchParams }) {
     }
 
     // Query produk dengan filter kategori, pencarian nama, urutan, dan paginasi langsung di query database
-    let query = supabase.from("produk").select("*", { count: "exact" });
+    let query = supabase
+      .from("produk")
+      .select("*", { count: "exact" })
+      .eq("aktif", true);
 
     if (kategoriTerpilih) {
       query = query.ilike("kategori", kategoriTerpilih);

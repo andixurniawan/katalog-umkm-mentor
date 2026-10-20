@@ -17,6 +17,7 @@ export async function ambilProdukFavorit(ids) {
     .from("produk")
     .select("*")
     .in("id", daftarId)
+    .eq("aktif", true)
     .order("id", { ascending: true });
 
   if (error) {

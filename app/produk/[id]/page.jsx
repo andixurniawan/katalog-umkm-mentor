@@ -23,6 +23,7 @@ const ambilProduk = cache(async (id) => {
     .from("produk")
     .select("*")
     .eq("id", id)
+    .eq("aktif", true)
     .maybeSingle();
 
   return error ? null : data;
@@ -79,6 +80,7 @@ export default async function HalamanDetailProduk({ params }) {
       .from("produk")
       .select("*")
       .eq("kategori", produk.kategori)
+      .eq("aktif", true)
       .neq("id", produkId)
       .order("id", { ascending: true })
       .limit(4);

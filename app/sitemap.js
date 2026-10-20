@@ -17,6 +17,7 @@ export default async function sitemap() {
   const { data, error } = await supabase
     .from("produk")
     .select("id, created_at")
+    .eq("aktif", true)
     .order("id", { ascending: true });
 
   if (error || !data) {

@@ -237,6 +237,38 @@ export async function deleteProductAction(formData) {
   redirect("/admin");
 }
 
+export async function toggleProductActiveAction(prevState, formData) {
+  const supabaseAuth = await createServerAuthClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabaseAuth.auth.getUser();
+
+  if (userError || !user) {
+    return { error: "Anda harus login terlebih dahulu." };
+  }
+
+  const id = formData.get("id");
+  if (!id) {
+    return { error: "ID produk tidak valid." };
+  }
+
+  // Nilai tujuan dikirim dari form, jadi klik ganda tidak membalik status dua kali.
+  const aktif = formData.get("aktif") === "true";
+
+  const { error } = await supabaseAuth.from("produk").update({ aktif }).eq("id", id);
+
+  if (error) {
+    console.error("Gagal mengubah status produk:", error.message);
+    return { error: "Gagal mengubah status produk: " + error.message };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+  revalidatePath(`/produk/${id}`);
+  return { success: true };
+}
+
 export async function generateDescriptionAction({ nama, kategori }) {
   const supabaseAuth = await createServerAuthClient();
   const {
