@@ -621,3 +621,24 @@ Kriteria selesai:
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-33 Cari dan paginasi di list admin
+
+**Prompt:**
+Sebagai admin, saya ingin mencari produk di halaman admin, supaya cepat menemukan yang saya cari.
+
+Bernilai 10 poin.
+
+Kriteria selesai:
+
+- Ada kolom cari di `/admin` yang menyaring lewat query database. (4 poin)
+- Daftar produk dipaginasi. (3 poin)
+- Kata kunci dan nomor halaman tersimpan di URL, jadi tetap ada setelah dimuat ulang. (3 poin)
+
+**Hasil:**
+- `app/admin/page.jsx`: parameter URL `q` dan `halaman`. Pencarian memakai `ilike` pada kolom `nama` di query Supabase, dan jumlah dibatasi 10 per halaman dengan `.range()` plus `count: "exact"` untuk total halaman. Karakter `%`, `_`, dan `\` dari pengguna di-escape supaya dicari apa adanya. Jika nomor halaman melebihi jumlah halaman (misalnya setelah menghapus produk terakhir di halaman itu), diarahkan ke halaman terakhir. Ringkasan dashboard (US-30) tetap menghitung seluruh produk, tidak terpengaruh pencarian.
+- Form cari memakai `GET`, jadi kata kunci dan halaman ada di URL (`/admin?q=kopi&halaman=2`) dan bertahan saat dimuat ulang atau dibagikan. Ada tombol Reset, teks "Menampilkan X–Y dari Z produk", dan pesan jika tidak ada hasil.
+- `components/Paginasi.jsx` (baru): tombol Sebelumnya/Selanjutnya dan nomor halaman dengan "…" supaya tidak terlalu panjang.
+
+**Perbaikan:**
+Tidak ada perbaikan.

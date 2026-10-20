@@ -3,11 +3,19 @@ import NavAdmin from "@/components/NavAdmin";
 import TabelProduk from "@/components/TabelProduk";
 import RingkasanAdmin from "@/components/RingkasanAdmin";
 import Tombol from "@/components/Tombol";
+import Input from "@/components/Input";
+import Paginasi from "@/components/Paginasi";
 import { createServerAuthClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function HalamanAdmin() {
+const PER_HALAMAN = 10;
+
+export default async function HalamanAdmin({ searchParams }) {
+  const sp = await searchParams;
+  const kataKunci = (sp?.q || "").toString().trim().slice(0, 100);
+  const halaman = Math.max(1, parseInt(sp?.halaman, 10) || 1);
+
   const supabase = await createServerAuthClient();
   const {
     data: { user },
@@ -17,12 +25,41 @@ export default async function HalamanAdmin() {
     redirect("/admin/login");
   }
 
+  // Pencarian dan pembatasan jumlah dilakukan di query database. % dan _ dari pengguna
+  // di-escape supaya dicari apa adanya, bukan sebagai wildcard.
+  const dari = (halaman - 1) * PER_HALAMAN;
+  let queryDaftar = supabase.from("produk").select("*", { count: "exact" });
+  if (kataKunci) {
+    queryDaftar = queryDaftar.ilike("nama", `%${kataKunci.replace(/[\\%_]/g, "\\$&")}%`);
+  }
+  queryDaftar = queryDaftar.order("id", { ascending: true }).range(dari, dari + PER_HALAMAN - 1);
+
   // Daftar produk dan data ringkasan diambil bersamaan dari database.
-  const [{ data: daftarProduk, error }, { data: dataKategori, error: errorRingkasan }] =
-    await Promise.all([
-      supabase.from("produk").select("*").order("id", { ascending: true }),
-      supabase.from("produk").select("kategori"),
-    ]);
+  const [
+    { data: daftarProduk, count, error },
+    { data: dataKategori, error: errorRingkasan },
+  ] = await Promise.all([queryDaftar, supabase.from("produk").select("kategori")]);
+
+  function buatTautan(nomor) {
+    const params = new URLSearchParams();
+    if (kataKunci) params.set("q", kataKunci);
+    if (nomor > 1) params.set("halaman", nomor);
+    return params.size ? `/admin?${params}` : "/admin";
+  }
+
+  // Nomor halaman di URL melebihi jumlah halaman (misalnya setelah menghapus produk terakhir di halaman itu):
+  // PostgREST membalas PGRST103 "range not satisfiable", jadi hitung total lalu pindah ke halaman terakhir.
+  if (error?.code === "PGRST103") {
+    let queryHitung = supabase.from("produk").select("id", { count: "exact", head: true });
+    if (kataKunci) {
+      queryHitung = queryHitung.ilike("nama", `%${kataKunci.replace(/[\\%_]/g, "\\$&")}%`);
+    }
+    const { count: totalSemua } = await queryHitung;
+    redirect(buatTautan(Math.max(1, Math.ceil((totalSemua || 0) / PER_HALAMAN))));
+  }
+
+  const totalHasil = count || 0;
+  const totalHalaman = Math.max(1, Math.ceil(totalHasil / PER_HALAMAN));
 
   if (error) {
     console.error("Gagal mengambil data produk admin:", error.message);
@@ -56,16 +93,53 @@ export default async function HalamanAdmin() {
         <h1 className="text-2xl font-extrabold">Produk</h1>
         <Tombol href="/admin/produk/baru">Tambah produk</Tombol>
       </div>
+      <form method="GET" action="/admin" role="search" className="flex max-w-xl items-end gap-2">
+        <div className="flex-1">
+          <Input
+            label="Cari produk"
+            name="q"
+            type="search"
+            defaultValue={kataKunci}
+            placeholder="Ketik nama produk..."
+            maxLength={100}
+          />
+        </div>
+        <Tombol type="submit" className="h-[46px]">
+          Cari
+        </Tombol>
+        {kataKunci && (
+          <Tombol href="/admin" varian="garis" className="h-[46px]">
+            Reset
+          </Tombol>
+        )}
+      </form>
       {error ? (
         <p className="py-8 text-center font-medium text-bahaya">
           Gagal mengambil data produk dari database.
         </p>
       ) : produkList.length === 0 ? (
         <p className="py-8 text-center font-medium text-teks-lembut">
-          Belum ada produk.
+          {kataKunci ? `Tidak ada produk dengan nama "${kataKunci}".` : "Belum ada produk."}
         </p>
       ) : (
-        <TabelProduk daftarProduk={produkList} />
+        <>
+          <p className="text-sm text-teks-lembut">
+            Menampilkan {dari + 1}–{dari + produkList.length} dari {totalHasil} produk
+            {kataKunci && (
+              <>
+                {" "}
+                dengan kata kunci <strong className="text-teks">"{kataKunci}"</strong>
+              </>
+            )}
+          </p>
+          <TabelProduk daftarProduk={produkList} />
+          <Paginasi
+            halaman={halaman}
+            totalHalaman={totalHalaman}
+            buatTautan={buatTautan}
+            label="Navigasi halaman daftar produk"
+          />
+        </>
       )}
     </div>
   );
