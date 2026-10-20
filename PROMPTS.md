@@ -668,3 +668,25 @@ Kriteria selesai:
 **Perbaikan:**
 - Versi pertama memakai `<form action>` dan dropdown badge/kategori kembali kosong setelah error. Ditemukan lewat uji browser dan diperbaiki dengan submit manual.
 - Harga 0 sebelumnya diterima; sekarang ditolak karena user story menyebut "angka positif".
+
+## US-35 Ekspor produk ke CSV
+
+**Prompt:**
+Sebagai admin, saya ingin mengunduh daftar produk, supaya bisa dibuka di spreadsheet.
+
+Bernilai 10 poin.
+
+Kriteria selesai:
+
+- Ada tombol "Ekspor CSV" yang mengunduh semua produk. (4 poin)
+- CSV dibuat di server, kolom dan header jelas, dan karakter khusus (koma, kutip) aman. (3 poin)
+- Endpoint memeriksa login: tanpa login ditolak. (3 poin)
+
+**Hasil:**
+- `app/admin/ekspor-csv/route.js` (baru): Route Handler `GET /admin/ekspor-csv`. Memeriksa login di server (tanpa login dibalas 401; `proxy.js` juga mengalihkan ke `/admin/login`). Mengambil semua produk bertahap 1000 baris (batas Supabase), tidak terpengaruh pencarian atau halaman, lalu mengirim file `produk-YYYY-MM-DD.csv`.
+- Kolom: ID, Nama, Kategori, Harga, Harga Diskon, Stok, Badge, Status (Aktif/Nonaktif), Deskripsi, Link Foto, Dibuat.
+- `lib/csv.js` (baru): sel berisi koma, kutip, atau baris baru dibungkus kutip dan kutip digandakan. Teks yang diawali `=`, `+`, `-`, `@` diberi awalan `'` supaya tidak dibaca sebagai rumus di spreadsheet. Baris dipisah CRLF, ada BOM UTF-8 supaya Excel membaca huruf non-ASCII dengan benar.
+- `app/admin/page.jsx`: tombol "Ekspor CSV" di sebelah "Tambah produk" (tautan biasa `<a download>`, bukan `Link`, supaya tidak di-prefetch).
+
+**Perbaikan:**
+Tidak ada perbaikan.
