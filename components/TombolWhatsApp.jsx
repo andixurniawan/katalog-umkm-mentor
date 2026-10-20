@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toko } from "@/lib/toko";
 import TombolTambahKeranjang from "@/components/TombolTambahKeranjang";
+import { catatKlikWhatsAppAction } from "@/app/produk/[id]/catat-klik";
 import { formatRupiah, hargaAktif } from "@/lib/format";
 
 export default function TombolWhatsApp({ produk }) {
@@ -156,6 +157,10 @@ export default function TombolWhatsApp({ produk }) {
         href={linkWhatsApp}
         target="_blank"
         rel="noopener noreferrer"
+        // Pencatatan tidak ditunggu dan errornya diabaikan, jadi WhatsApp selalu terbuka.
+        onClick={() => {
+          catatKlikWhatsAppAction(produk.id).catch(() => {});
+        }}
         className="inline-flex w-full items-center justify-center rounded-lg bg-utama px-5 py-3 font-semibold text-kontras transition-colors hover:bg-utama-gelap"
       >
         Pesan via WhatsApp

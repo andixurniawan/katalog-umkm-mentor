@@ -200,3 +200,27 @@ create policy "admin_ubah_ulasan" on public.ulasan
   for update to authenticated using (true) with check (true);
 create policy "admin_hapus_ulasan" on public.ulasan
   for delete to authenticated using (true);
+
+-- 11. Pencatatan klik pesan WhatsApp (US-40, US-41)
+-- Hanya menyimpan produk dan waktu klik, tanpa data pribadi pengunjung (tanpa IP, nama, atau nomor).
+-- Pencatatan lewat Server Action (SUPABASE_SECRET_KEY), jadi tidak ada policy tulis untuk publik.
+create table if not exists public.klik_whatsapp (
+  id bigint generated always as identity primary key,
+  produk_id bigint not null references public.produk (id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists klik_whatsapp_produk_idx on public.klik_whatsapp (produk_id);
+
+alter table public.klik_whatsapp enable row level security;
+
+drop policy if exists "admin_baca_klik_whatsapp" on public.klik_whatsapp;
+create policy "admin_baca_klik_whatsapp" on public.klik_whatsapp
+  for select to authenticated using (true);
+
+-- Jumlah klik per produk untuk dashboard admin. security_invoker: RLS tabel di atas tetap berlaku.
+create or replace view public.klik_whatsapp_per_produk
+  with (security_invoker = true) as
+  select produk_id, count(*)::int as jumlah
+  from public.klik_whatsapp
+  group by produk_id;

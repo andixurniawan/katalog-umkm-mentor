@@ -2,6 +2,7 @@
 
 import { useKeranjang } from "@/components/KeranjangProvider";
 import Tombol from "@/components/Tombol";
+import { catatKlikWhatsAppAction } from "@/app/produk/[id]/catat-klik";
 import { toko } from "@/lib/toko";
 import { formatRupiah } from "@/lib/format";
 
@@ -104,6 +105,12 @@ export default function IsiKeranjang() {
           href={linkWhatsApp}
           target="_blank"
           rel="noopener noreferrer"
+          // Satu klik dicatat per produk berbeda di keranjang; tidak ditunggu supaya WhatsApp tetap terbuka.
+          onClick={() => {
+            for (const id of new Set(items.map((item) => item.id))) {
+              catatKlikWhatsAppAction(id).catch(() => {});
+            }
+          }}
           className="inline-flex w-full items-center justify-center rounded-lg bg-utama px-5 py-3 font-semibold text-kontras transition-colors hover:bg-utama-gelap"
         >
           Pesan semua via WhatsApp

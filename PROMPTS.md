@@ -744,3 +744,17 @@ Sebagai admin, saya ingin mengelola ulasan, supaya ulasan yang tidak pantas tida
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-40 Catat klik pesan WhatsApp
+
+**Prompt:**
+Sebagai pemilik toko, saya ingin tahu produk mana yang sering dipesan, supaya saya bisa menyiapkan stok. Bernilai 10 poin. Kriteria: klik tombol pesan WhatsApp tercatat di tabel database, produk dan waktu (4); pencatatan lewat Server Action atau route handler dan tidak menghambat pembukaan WhatsApp (3); tidak menyimpan data pribadi pengunjung (3).
+
+**Hasil:**
+- `docs/schema.sql` bagian 11: tabel `klik_whatsapp` (`produk_id`, `created_at`) dengan RLS aktif dan hanya policy baca untuk admin. **Harus dijalankan di Supabase SQL Editor.**
+- `app/produk/[id]/catat-klik.js` (baru): Server Action `catatKlikWhatsAppAction(produkId)`. Memeriksa produk aktif, membatasi 30 pencatatan per menit per alamat (`lib/batas-kiriman.js`), lalu menyimpan hanya `produk_id`; waktu diisi database.
+- `components/TombolWhatsApp.jsx` dan `components/IsiKeranjang.jsx`: `onClick` memanggil action tanpa `await` dan dengan `.catch` kosong, sedangkan tautan `wa.me` (`target="_blank"`) tetap terbuka seperti biasa walau pencatatan gagal. Keranjang mencatat satu klik per produk berbeda.
+- Tidak ada IP, nama, nomor, atau isi pesan yang disimpan; IP hanya dipakai sebagai kunci sementara di memori server untuk pembatas.
+
+**Perbaikan:**
+Tidak ada perbaikan.
