@@ -13,6 +13,7 @@ import PanelPembelian from "@/components/PanelPembelian";
 import BadgeProduk from "@/components/BadgeProduk";
 import { createPublicClient } from "@/lib/supabase/server";
 import { ekstrakDaftarFoto } from "@/lib/foto";
+import { tautanKategori } from "@/lib/slug";
 import { ambilVarianProduk } from "@/lib/varian";
 import { ambilUlasanProduk } from "@/lib/ulasan";
 import { ambilToko } from "@/lib/pengaturan-toko";
@@ -114,7 +115,11 @@ export default async function HalamanDetailProduk({ params }) {
             Kembali ke katalog
           </Link>
           <div className="flex items-center gap-2">
-            <p className="text-sm text-teks-lembut">{produk.kategori}</p>
+            {produk.kategori && (
+              <Link href={tautanKategori(produk.kategori)} className="text-sm text-teks-lembut hover:text-utama hover:underline">
+                {produk.kategori}
+              </Link>
+            )}
             <BadgeProduk badge={produk.badge} />
           </div>
           <h1 className="text-3xl font-extrabold leading-tight tracking-tight">

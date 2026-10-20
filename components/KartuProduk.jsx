@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { tautanKategori } from "@/lib/slug";
 import HargaProduk from "@/components/HargaProduk";
 import BadgeProduk from "@/components/BadgeProduk";
 import TombolTambahKeranjang from "@/components/TombolTambahKeranjang";
@@ -12,7 +13,7 @@ export default function KartuProduk({ produk }) {
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-garis bg-latar">
-      <Link href={`/produk/${produk.id}`} className="flex flex-1 flex-col">
+      <Link href={`/produk/${produk.id}`} className="block">
         <div className="relative">
           <img
             src={fotoUtama}
@@ -28,15 +29,22 @@ export default function KartuProduk({ produk }) {
             <BadgeProduk badge={produk.badge} />
           </div>
         </div>
-        <div className="flex flex-1 flex-col gap-2 p-3">
-          <p className="text-xs text-teks-lembut">{produk.kategori}</p>
+      </Link>
+      {/* Kategori tertaut ke halamannya sendiri, jadi tidak boleh berada di dalam Link produk. */}
+      <div className={`flex flex-1 flex-col gap-2 px-3 pt-3 ${isHabis ? "pb-3" : ""}`}>
+        {produk.kategori && (
+          <Link href={tautanKategori(produk.kategori)} className="w-fit text-xs text-teks-lembut hover:text-utama hover:underline">
+            {produk.kategori}
+          </Link>
+        )}
+        <Link href={`/produk/${produk.id}`} className="flex flex-1 flex-col gap-2">
           <h3 className="font-semibold leading-snug group-hover:text-utama">{produk.nama}</h3>
           <HargaProduk produk={produk} />
-        </div>
-      </Link>
+        </Link>
+      </div>
       <TombolFavorit produk={produk} className="absolute right-2 top-2" />
       {!isHabis && (
-        <div className="px-3 pb-3">
+        <div className="px-3 pb-3 pt-3">
           <TombolTambahKeranjang produk={produk} className="w-full" />
         </div>
       )}

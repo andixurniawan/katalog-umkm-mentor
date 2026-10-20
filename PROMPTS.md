@@ -872,3 +872,17 @@ Sebagai pengunjung, saya ingin memilih ukuran dengan harga yang sesuai, supaya s
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-49 Halaman per kategori
+
+**Prompt:**
+Sebagai pengunjung, saya ingin membuka halaman khusus satu kategori, supaya bisa dibagikan dan mudah ditemukan. Bernilai 10 poin. Kriteria: `/kategori/[slug]` menampilkan produk kategori itu dari database (4); kategori yang tidak ada menampilkan "tidak ditemukan" (3); nama kategori di kartu atau halaman detail tertaut ke halaman tersebut (3).
+
+**Hasil:**
+- `lib/slug.js` (baru): `buatSlug("Kue Kering")` menjadi `kue-kering` dan `tautanKategori()`.
+- `app/kategori/[slug]/page.jsx` (baru): mencocokkan slug dengan nama kategori (dari tabel `kategori`, cadangan: kategori yang dipakai produk), lalu menampilkan produk aktif kategori itu dari database dengan urutan katalog (US-47). Slug yang tidak cocok memanggil `notFound()` (halaman "Halaman tidak ditemukan"). Judul tab: "Kategori Minuman | …".
+- `components/KartuProduk.jsx`: nama kategori sekarang `Link` ke halamannya. Karena sebelumnya seluruh kartu satu `Link`, struktur kartu dipecah (foto, kategori, nama+harga) supaya tidak ada tautan di dalam tautan. Halaman detail produk juga menautkan kategorinya.
+- Diuji pada build produksi: `/kategori/minuman` menampilkan produknya, `/kategori/tidak-ada` menampilkan "tidak ditemukan", dan beranda memuat 7 tautan kategori.
+
+**Perbaikan:**
+Tidak ada perbaikan.
