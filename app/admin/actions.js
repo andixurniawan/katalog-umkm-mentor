@@ -4,8 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createServerAuthClient } from "@/lib/supabase/server";
 import { unggahFoto } from "@/lib/unggah-foto";
-
-const BADGE_VALID = ["Baru", "Terlaris"];
+import { validasiProduk } from "@/lib/validasi-produk";
 
 export async function loginAction(prevState, formData) {
   const email = formData.get("email");
@@ -81,53 +80,31 @@ export async function createProductAction(prevState, formData) {
     return { error: "Anda harus login terlebih dahulu." };
   }
 
-  const nama = formData.get("nama")?.toString().trim();
-  const hargaRaw = formData.get("harga");
-  const harga = parseInt(hargaRaw, 10);
-  const kategori = formData.get("kategori")?.toString().trim();
-  let foto_url = formData.get("foto_url")?.toString().trim();
-  const deskripsi = formData.get("deskripsi")?.toString().trim();
+  const { data, values, errors } = validasiProduk(formData);
   const fotoFile = formData.get("foto_file");
-  const stokRaw = formData.get("stok")?.toString().trim();
-  const stok = stokRaw !== "" && stokRaw != null ? parseInt(stokRaw, 10) : null;
-  const diskonRaw = formData.get("harga_diskon")?.toString().trim();
-  const hargaDiskon = diskonRaw ? parseInt(diskonRaw, 10) : null;
-  const badgeRaw = formData.get("badge")?.toString().trim();
-  const badge = BADGE_VALID.includes(badgeRaw) ? badgeRaw : null;
 
-  if (!nama || isNaN(harga) || harga < 0) {
-    return { error: "Nama dan harga produk (minimal 0) wajib diisi." };
+  if (Object.keys(errors).length > 0) {
+    return { error: "Periksa kembali isian yang ditandai.", errors, values };
   }
 
-  if (hargaDiskon !== null && (isNaN(hargaDiskon) || hargaDiskon < 0 || hargaDiskon >= harga)) {
-    return { error: "Harga diskon harus berupa angka dan lebih kecil dari harga normal." };
-  }
+  let foto_url = data.foto_url;
 
   // Foto yang diunggah ditambahkan ke link foto yang sudah ada (galeri US-18 tidak ikut terhapus).
   if (fotoFile && typeof fotoFile === "object" && fotoFile.size > 0) {
     const hasil = await unggahFoto(fotoFile);
     if (hasil.error) {
-      return { error: hasil.error };
+      return { errors: { foto_file: hasil.error }, values };
     }
     foto_url = foto_url ? `${foto_url},${hasil.url}` : hasil.url;
   }
 
   const { error } = await supabaseAuth.from("produk").insert([
-    {
-      nama,
-      harga,
-      kategori: kategori || null,
-      foto_url: foto_url || null,
-      deskripsi: deskripsi || null,
-      stok: stok !== null && !isNaN(stok) ? stok : null,
-      harga_diskon: hargaDiskon,
-      badge,
-    },
+    { ...data, foto_url },
   ]);
 
   if (error) {
     console.error("Gagal menambah produk:", error.message);
-    return { error: "Gagal menyimpan produk: " + error.message };
+    return { error: "Gagal menyimpan produk: " + error.message, values };
   }
 
   revalidatePath("/admin");
@@ -151,54 +128,32 @@ export async function updateProductAction(prevState, formData) {
     return { error: "ID produk tidak valid." };
   }
 
-  const nama = formData.get("nama")?.toString().trim();
-  const hargaRaw = formData.get("harga");
-  const harga = parseInt(hargaRaw, 10);
-  const kategori = formData.get("kategori")?.toString().trim();
-  let foto_url = formData.get("foto_url")?.toString().trim();
-  const deskripsi = formData.get("deskripsi")?.toString().trim();
+  const { data, values, errors } = validasiProduk(formData);
   const fotoFile = formData.get("foto_file");
-  const stokRaw = formData.get("stok")?.toString().trim();
-  const stok = stokRaw !== "" && stokRaw != null ? parseInt(stokRaw, 10) : null;
-  const diskonRaw = formData.get("harga_diskon")?.toString().trim();
-  const hargaDiskon = diskonRaw ? parseInt(diskonRaw, 10) : null;
-  const badgeRaw = formData.get("badge")?.toString().trim();
-  const badge = BADGE_VALID.includes(badgeRaw) ? badgeRaw : null;
 
-  if (!nama || isNaN(harga) || harga < 0) {
-    return { error: "Nama dan harga produk (minimal 0) wajib diisi." };
+  if (Object.keys(errors).length > 0) {
+    return { error: "Periksa kembali isian yang ditandai.", errors, values };
   }
 
-  if (hargaDiskon !== null && (isNaN(hargaDiskon) || hargaDiskon < 0 || hargaDiskon >= harga)) {
-    return { error: "Harga diskon harus berupa angka dan lebih kecil dari harga normal." };
-  }
+  let foto_url = data.foto_url;
 
   // Foto yang diunggah ditambahkan ke link foto yang sudah ada (galeri US-18 tidak ikut terhapus).
   if (fotoFile && typeof fotoFile === "object" && fotoFile.size > 0) {
     const hasil = await unggahFoto(fotoFile);
     if (hasil.error) {
-      return { error: hasil.error };
+      return { errors: { foto_file: hasil.error }, values };
     }
     foto_url = foto_url ? `${foto_url},${hasil.url}` : hasil.url;
   }
 
   const { error } = await supabaseAuth
     .from("produk")
-    .update({
-      nama,
-      harga,
-      kategori: kategori || null,
-      foto_url: foto_url || null,
-      deskripsi: deskripsi || null,
-      stok: stok !== null && !isNaN(stok) ? stok : null,
-      harga_diskon: hargaDiskon,
-      badge,
-    })
+    .update({ ...data, foto_url })
     .eq("id", id);
 
   if (error) {
     console.error("Gagal memperbarui produk:", error.message);
-    return { error: "Gagal menyimpan perubahan produk: " + error.message };
+    return { error: "Gagal menyimpan perubahan produk: " + error.message, values };
   }
 
   revalidatePath("/admin");

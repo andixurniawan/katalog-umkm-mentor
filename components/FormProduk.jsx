@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import Input from "@/components/Input";
 import Tombol from "@/components/Tombol";
@@ -16,9 +16,27 @@ export default function FormProduk({
   isPending,
   daftarKategori = [],
 }) {
-  const [nama, setNama] = useState(produk?.nama || "");
-  const [kategori, setKategori] = useState(produk?.kategori || "");
-  const [deskripsi, setDeskripsi] = useState(produk?.deskripsi || "");
+  // Semua isian dikontrol state agar bisa dibaca komponen ini (misalnya untuk deskripsi AI).
+  const awal = (kunci) => (produk?.[kunci] ?? "").toString();
+  const [nama, setNama] = useState(awal("nama"));
+  const [harga, setHarga] = useState(awal("harga"));
+  const [hargaDiskon, setHargaDiskon] = useState(awal("harga_diskon"));
+  const [kategori, setKategori] = useState(awal("kategori"));
+  const [badge, setBadge] = useState(awal("badge"));
+  const [stok, setStok] = useState(awal("stok"));
+  const [fotoUrl, setFotoUrl] = useState(awal("foto_url"));
+  const [deskripsi, setDeskripsi] = useState(awal("deskripsi"));
+  const errors = state?.errors || {};
+  const [, startTransition] = useTransition();
+
+  // Submit ditangani manual (bukan <form action>) karena React mereset seluruh form setelah action
+  // selesai; reset itu mengembalikan <select> ke pilihan awal dan mengosongkan input file.
+  // Dengan cara ini isian tetap ada saat server menolak data.
+  function handleSubmit(e) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    startTransition(() => action(formData));
+  }
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [aiError, setAiError] = useState(null);
 
@@ -49,7 +67,12 @@ export default function FormProduk({
   };
 
   return (
-    <form action={action} encType="multipart/form-data" className="flex max-w-xl flex-col gap-4">
+    <form
+      onSubmit={handleSubmit}
+      encType="multipart/form-data"
+      noValidate
+      className="flex max-w-xl flex-col gap-4"
+    >
       {produk?.id && <input type="hidden" name="id" value={produk.id} />}
       {state?.error && (
         <p className="rounded-lg bg-bahaya/10 p-3 text-sm font-medium text-bahaya">
@@ -61,14 +84,17 @@ export default function FormProduk({
         name="nama"
         value={nama}
         onChange={(e) => setNama(e.target.value)}
+        error={errors.nama}
         required
       />
       <Input
         label="Harga (Rp)"
         name="harga"
         type="number"
-        min="0"
-        defaultValue={produk.harga}
+        min="1"
+        value={harga}
+        onChange={(e) => setHarga(e.target.value)}
+        error={errors.harga}
         required
       />
       <Input
@@ -76,7 +102,9 @@ export default function FormProduk({
         name="harga_diskon"
         type="number"
         min="0"
-        defaultValue={produk.harga_diskon ?? ""}
+        value={hargaDiskon}
+        onChange={(e) => setHargaDiskon(e.target.value)}
+        error={errors.harga_diskon}
       />
       <div className="flex flex-col gap-1.5">
         <label htmlFor="badge" className="text-sm font-semibold">
@@ -85,13 +113,20 @@ export default function FormProduk({
         <select
           id="badge"
           name="badge"
-          defaultValue={produk.badge ?? ""}
+          value={badge}
+          onChange={(e) => setBadge(e.target.value)}
+          aria-invalid={errors.badge ? true : undefined}
           className="w-full rounded-lg border border-garis bg-latar px-3 py-2.5 text-base text-teks focus:border-utama focus:outline-none"
         >
           <option value="">Tanpa badge</option>
           <option value="Baru">Baru</option>
           <option value="Terlaris">Terlaris</option>
         </select>
+        {errors.badge && (
+          <span role="alert" className="text-sm font-medium text-bahaya">
+            {errors.badge}
+          </span>
+        )}
       </div>
       <div className="flex flex-col gap-1.5">
         <label htmlFor="kategori" className="text-sm font-semibold">
@@ -127,22 +162,32 @@ export default function FormProduk({
           name="stok"
           type="number"
           min="0"
-          defaultValue={produk.stok ?? ""}
+          value={stok}
+          onChange={(e) => setStok(e.target.value)}
+          aria-invalid={errors.stok ? true : undefined}
           placeholder="Contoh: 10 (kosong = tidak dilacak)"
-          className="w-full rounded-lg border border-garis bg-latar px-3 py-2.5 text-base text-teks placeholder:text-teks-lembut focus:border-utama focus:outline-none"
+          className={`w-full rounded-lg border bg-latar px-3 py-2.5 text-base text-teks placeholder:text-teks-lembut focus:border-utama focus:outline-none ${errors.stok ? "border-bahaya" : "border-garis"}`}
         />
+        {errors.stok && (
+          <span role="alert" className="text-sm font-medium text-bahaya">
+            {errors.stok}
+          </span>
+        )}
       </div>
       <Input
         label="Upload foto produk (JPG, PNG, WebP, atau GIF, maksimal 2 MB; ditambahkan ke link di bawah)"
         name="foto_file"
         type="file"
         accept="image/jpeg,image/png,image/webp,image/gif"
+        error={errors.foto_file}
       />
       <Input
         label="Link foto (pisahkan dengan koma untuk beberapa foto)"
         name="foto_url"
         placeholder="https://... atau /produk/nama-file.svg"
-        defaultValue={produk.foto_url}
+        value={fotoUrl}
+        onChange={(e) => setFotoUrl(e.target.value)}
+        error={errors.foto_url}
       />
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between">
@@ -170,8 +215,14 @@ export default function FormProduk({
           value={deskripsi}
           onChange={(e) => setDeskripsi(e.target.value)}
           placeholder="Tulis deskripsi produk atau buat otomatis menggunakan AI di atas..."
-          className="w-full rounded-lg border border-garis bg-latar px-3 py-2.5 text-base text-teks placeholder:text-teks-lembut focus:border-utama focus:outline-none"
+          aria-invalid={errors.deskripsi ? true : undefined}
+          className={`w-full rounded-lg border bg-latar px-3 py-2.5 text-base text-teks placeholder:text-teks-lembut focus:border-utama focus:outline-none ${errors.deskripsi ? "border-bahaya" : "border-garis"}`}
         />
+        {errors.deskripsi && (
+          <span role="alert" className="text-sm font-medium text-bahaya">
+            {errors.deskripsi}
+          </span>
+        )}
       </div>
       <div className="flex gap-3">
         <Tombol type="submit" disabled={isPending}>

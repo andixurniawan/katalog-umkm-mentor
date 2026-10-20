@@ -642,3 +642,26 @@ Kriteria selesai:
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-34 Validasi form admin di server
+
+**Prompt:**
+Sebagai admin, saya ingin form menolak data yang salah, supaya katalog tidak berisi data rusak.
+
+Bernilai 10 poin.
+
+Kriteria selesai:
+
+- Server memvalidasi input: nama wajib, harga angka positif. (4 poin)
+- Pesan error tampil per field di bawah input yang salah. (3 poin)
+- Nilai yang sudah diisi tidak hilang saat terjadi error. (3 poin)
+
+**Hasil:**
+- `lib/validasi-produk.js` (baru): satu validator untuk tambah dan ubah produk. Nama wajib (maksimal 100 karakter, spasi saja ditolak); harga wajib, angka bulat lebih dari 0 (`45.000`, `12abc`, `1e3`, `-5`, dan `0` ditolak); harga diskon angka bulat dan lebih kecil dari harga; stok angka bulat 0 sampai 1.000.000; badge hanya `Baru`/`Terlaris`; link foto hanya `http(s)://` atau path `/...` (`javascript:` dan `//host` ditolak); deskripsi maksimal 2000 karakter. Semua error dikumpulkan sekaligus, per field.
+- `app/admin/actions.js`: `createProductAction` dan `updateProductAction` memakai validator itu setelah cek login, dan mengembalikan `{ errors, values }`. Error upload foto (US-29) juga ditampilkan di bawah input file. Penyimpanan hanya berjalan jika semua valid.
+- `components/Input.jsx`: prop `error` menampilkan pesan merah di bawah input, dengan `aria-invalid` dan `role="alert"`. `components/FormProduk.jsx`: pesan error di tiap field, form memakai `noValidate` supaya pesan dari server yang tampil.
+- Nilai tidak hilang: React mereset form setelah action selesai, dan reset itu mengembalikan dropdown (badge, kategori) ke pilihan awal serta mengosongkan input file. `FormProduk` sekarang menangani submit sendiri (`onSubmit` + `useTransition`) sehingga reset tidak terjadi. Semua field dikontrol state. Ini diuji di browser sungguhan (lihat catatan tes).
+
+**Perbaikan:**
+- Versi pertama memakai `<form action>` dan dropdown badge/kategori kembali kosong setelah error. Ditemukan lewat uji browser dan diperbaiki dengan submit manual.
+- Harga 0 sebelumnya diterima; sekarang ditolak karena user story menyebut "angka positif".
