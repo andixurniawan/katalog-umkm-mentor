@@ -6,6 +6,7 @@ import { createServerAuthClient, createPublicClient } from "@/lib/supabase/serve
 import { unggahFoto } from "@/lib/unggah-foto";
 import { validasiProduk } from "@/lib/validasi-produk";
 import { buatDeskripsiAi } from "@/lib/deskripsi-ai";
+import { prosesImpor, UKURAN_CSV_MAKSIMAL } from "@/lib/impor-produk";
 import { catatLog } from "@/lib/log-aktivitas";
 import { validasiToko } from "@/lib/validasi-toko";
 import { TAG_TOKO } from "@/lib/pengaturan-toko";
@@ -612,4 +613,51 @@ export async function hapusAdminAction(prevState, formData) {
 
   revalidatePath("/admin/akun");
   return { success: true };
+}
+
+// ---- Impor produk dari CSV (US-46) ----
+
+export async function imporProdukAction(prevState, formData) {
+  const supabase = await createServerAuthClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+  if (userError || !user) return { error: "Anda harus login terlebih dahulu." };
+
+  const berkas = formData.get("berkas_csv");
+  if (!berkas || typeof berkas !== "object" || berkas.size === 0) {
+    return { error: "Pilih file CSV terlebih dahulu." };
+  }
+  if (berkas.size > UKURAN_CSV_MAKSIMAL) {
+    return { error: `Ukuran file terlalu besar. Maksimal ${UKURAN_CSV_MAKSIMAL / 1024 / 1024} MB.` };
+  }
+  if (!/\.csv$/i.test(berkas.name || "")) {
+    return { error: "File harus berekstensi .csv." };
+  }
+
+  const { data: daftarKategori, error: errorKategori } = await supabase.from("kategori").select("nama");
+  if (errorKategori) {
+    console.error("Gagal membaca kategori untuk impor:", errorKategori.message);
+    return { error: "Gagal membaca daftar kategori dari database." };
+  }
+
+  const hasil = prosesImpor(await berkas.text(), (daftarKategori || []).map((k) => k.nama));
+  if (hasil.error) return { error: hasil.error };
+
+  let berhasil = 0;
+  if (hasil.valid.length > 0) {
+    // Satu insert untuk semua baris valid: tersimpan semua atau tidak sama sekali.
+    const { error } = await supabase.from("produk").insert(hasil.valid.map((b) => b.data));
+    if (error) {
+      console.error("Gagal mengimpor produk:", error.message);
+      return { error: "Gagal menyimpan produk ke database: " + error.message };
+    }
+    berhasil = hasil.valid.length;
+    await catatLog(supabase, user, "Impor produk", `${berhasil} produk dari ${berkas.name}`);
+    revalidatePath("/admin");
+    revalidatePath("/");
+  }
+
+  return { ringkasan: { berhasil, gagal: hasil.gagal, total: hasil.valid.length + hasil.gagal.length }, waktu: Date.now() };
 }

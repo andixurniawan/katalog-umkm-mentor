@@ -117,6 +117,9 @@ export default async function HalamanAdmin({ searchParams }) {
           >
             Ekspor CSV
           </a>
+          <Tombol href="/admin/impor" varian="garis">
+            Impor CSV
+          </Tombol>
           <Tombol href="/admin/produk/baru">Tambah produk</Tombol>
         </div>
       </div>

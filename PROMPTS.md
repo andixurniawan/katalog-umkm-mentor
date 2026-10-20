@@ -827,3 +827,18 @@ Sebagai admin, saya ingin melihat riwayat perubahan, supaya tahu siapa mengubah 
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-46 Impor produk dari CSV
+
+**Prompt:**
+Sebagai admin, saya ingin memasukkan banyak produk sekaligus, supaya tidak mengetik satu per satu. Bernilai 15 poin. Kriteria: form unggah CSV di admin, login diperiksa di server (4); setiap baris divalidasi (kolom wajib, harga angka) dan baris yang salah dilaporkan beserta nomor barisnya (4); baris valid disimpan sekaligus ke database (4); ringkasan hasil berhasil dan gagal ditampilkan (3).
+
+**Hasil:**
+- `app/admin/impor/page.jsx` (baru) + `components/FormImpor.jsx`: form unggah dan petunjuk format. Tombol "Impor CSV" di `/admin`.
+- `lib/csv.js`: `bacaCsv()` (parser CSV sendiri tanpa paket baru; mendukung kutip, koma dan baris baru dalam sel, pemisah `,` atau `;`, BOM; kutip yang tidak ditutup dilaporkan).
+- `lib/impor-produk.js` (baru): memetakan judul kolom (termasuk judul hasil Ekspor CSV, jadi file ekspor bisa diimpor lagi), memakai `validasiProduk` yang sama dengan form admin per baris, mencocokkan kategori dengan kategori yang ada (huruf besar/kecil diabaikan), memvalidasi Status. Batas 1 MB dan 500 baris. Nomor baris mengikuti spreadsheet (judul = baris 1).
+- `imporProdukAction` di `app/admin/actions.js`: cek login, cek file `.csv`, lalu semua baris valid disimpan dalam satu `insert` (semua atau tidak sama sekali), dicatat di log aktivitas (US-45). Hasil: "N berhasil, M gagal" beserta daftar `Baris X: pesan`.
+- Diuji dengan data campuran: baris valid disimpan, nama kosong, harga huruf, kategori tidak ada, diskon lebih besar dari harga, dan status salah dilaporkan dengan nomor barisnya. Penyimpanan ke database belum dicoba agar tidak menambah data asli.
+
+**Perbaikan:**
+Tidak ada perbaikan.
