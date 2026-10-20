@@ -4,6 +4,7 @@ import KartuProduk from "@/components/KartuProduk";
 import GaleriFoto from "@/components/GaleriFoto";
 import TombolWhatsApp from "@/components/TombolWhatsApp";
 import TombolBagikan from "@/components/TombolBagikan";
+import TombolFavorit from "@/components/TombolFavorit";
 import HargaProduk from "@/components/HargaProduk";
 import BadgeProduk from "@/components/BadgeProduk";
 import { createPublicClient } from "@/lib/supabase/server";
@@ -68,7 +69,10 @@ export default async function HalamanDetailProduk({ params }) {
             {produk.deskripsi}
           </p>
           <TombolWhatsApp produk={produk} />
-          <TombolBagikan nama={produk.nama} />
+          <div className="flex flex-wrap items-center gap-3">
+            <TombolFavorit produk={produk} denganTeks />
+            <TombolBagikan nama={produk.nama} />
+          </div>
         </div>
       </article>
 

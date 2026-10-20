@@ -2,6 +2,7 @@ import Link from "next/link";
 import HargaProduk from "@/components/HargaProduk";
 import BadgeProduk from "@/components/BadgeProduk";
 import TombolTambahKeranjang from "@/components/TombolTambahKeranjang";
+import TombolFavorit from "@/components/TombolFavorit";
 
 export default function KartuProduk({ produk }) {
   const fotoUtama =
@@ -10,7 +11,7 @@ export default function KartuProduk({ produk }) {
   const isHabis = produk.stok === 0;
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-2xl border border-garis bg-latar">
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-garis bg-latar">
       <Link href={`/produk/${produk.id}`} className="flex flex-1 flex-col">
         <div className="relative">
           <img
@@ -33,6 +34,7 @@ export default function KartuProduk({ produk }) {
           <HargaProduk produk={produk} />
         </div>
       </Link>
+      <TombolFavorit produk={produk} className="absolute right-2 top-2" />
       {!isHabis && (
         <div className="px-3 pb-3">
           <TombolTambahKeranjang produk={produk} className="w-full" />

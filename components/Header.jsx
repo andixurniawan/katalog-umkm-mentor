@@ -13,6 +13,9 @@ export default function Header() {
           <Link href="/tentang" className="text-sm font-semibold hover:text-utama">
             Tentang
           </Link>
+          <Link href="/favorit" className="text-sm font-semibold hover:text-utama">
+            Favorit
+          </Link>
           <LinkKeranjang />
         </nav>
       </div>
