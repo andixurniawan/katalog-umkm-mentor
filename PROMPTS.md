@@ -406,3 +406,22 @@ Kriteria selesai:
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-23 Bagikan atau salin link produk
+
+**Prompt:**
+Sebagai pengunjung, saya ingin membagikan produk ke teman, supaya mereka bisa melihatnya.
+
+Bernilai 5 poin.
+
+Kriteria selesai:
+
+- Halaman detail punya tombol bagikan atau salin link (Web Share API atau clipboard). (3 poin)
+- Ada umpan balik setelah ditekan, misalnya "Link tersalin". (2 poin)
+
+**Hasil:**
+- `components/TombolBagikan.jsx`: memakai Web Share API jika tersedia, kalau tidak menyalin link ke clipboard (dengan fallback `execCommand` untuk browser lama). Setelah menyalin tampil "Link tersalin" selama 2 detik; jika gagal tampil "Gagal menyalin link". Menutup dialog bagikan tidak memunculkan pesan.
+- `app/produk/[id]/page.jsx`: tombol dipasang di bawah tombol pesan.
+
+**Perbaikan:**
+Tidak ada perbaikan.
