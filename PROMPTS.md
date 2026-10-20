@@ -385,3 +385,24 @@ Kriteria selesai:
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-22 Halaman Tentang dan kontak toko
+
+**Prompt:**
+Sebagai pengunjung, saya ingin tahu siapa pemilik toko dan cara menghubunginya, supaya saya percaya pada toko ini.
+
+Bernilai 5 poin.
+
+Kriteria selesai:
+
+- Ada halaman (misalnya `/tentang`) berisi profil toko, alamat, jam buka, dan kontak. (3 poin)
+- Halaman tertaut dari navigasi atau footer. (2 poin)
+
+**Hasil:**
+- `app/tentang/page.jsx`: profil toko, alamat, jam buka, dan nomor WhatsApp dari `lib/toko.js`, plus tombol "Hubungi via WhatsApp" dan "Lihat katalog".
+- `components/Header.jsx`: tautan "Tentang" di navigasi.
+- `components/Footer.jsx`: tautan "Tentang & kontak".
+- Teks profil bersifat umum; pemilik bisa menggantinya dengan cerita usahanya sendiri.
+
+**Perbaikan:**
+Tidak ada perbaikan.

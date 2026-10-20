@@ -10,6 +10,11 @@ export default function Footer() {
           <p>{toko.alamat}</p>
           <p>{toko.jamBuka}</p>
         </div>
+        <nav aria-label="Navigasi footer">
+          <Link href="/tentang" className="font-semibold text-teks hover:text-utama">
+            Tentang &amp; kontak
+          </Link>
+        </nav>
       </div>
     </footer>
   );
