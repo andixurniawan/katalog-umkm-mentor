@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import KartuProduk from "@/components/KartuProduk";
 import GaleriFoto from "@/components/GaleriFoto";
 import TombolWhatsApp from "@/components/TombolWhatsApp";
-import { formatRupiah } from "@/lib/format";
+import HargaProduk from "@/components/HargaProduk";
+import BadgeProduk from "@/components/BadgeProduk";
 import { createPublicClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -54,13 +55,14 @@ export default async function HalamanDetailProduk({ params }) {
           >
             Kembali ke katalog
           </Link>
-          <p className="text-sm text-teks-lembut">{produk.kategori}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm text-teks-lembut">{produk.kategori}</p>
+            <BadgeProduk badge={produk.badge} />
+          </div>
           <h1 className="text-3xl font-extrabold leading-tight tracking-tight">
             {produk.nama}
           </h1>
-          <p className="self-start rounded-md bg-harga-latar px-3 py-1 text-xl font-bold text-harga">
-            {formatRupiah(produk.harga)}
-          </p>
+          <HargaProduk produk={produk} besar />
           <p className="max-w-prose leading-relaxed text-teks-lembut">
             {produk.deskripsi}
           </p>

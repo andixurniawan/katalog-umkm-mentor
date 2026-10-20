@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createServerAuthClient, createPublicClient } from "@/lib/supabase/server";
 
+const BADGE_VALID = ["Baru", "Terlaris"];
+
 export async function loginAction(prevState, formData) {
   const email = formData.get("email");
   const password = formData.get("password");
@@ -87,9 +89,17 @@ export async function createProductAction(prevState, formData) {
   const fotoFile = formData.get("foto_file");
   const stokRaw = formData.get("stok")?.toString().trim();
   const stok = stokRaw !== "" && stokRaw != null ? parseInt(stokRaw, 10) : null;
+  const diskonRaw = formData.get("harga_diskon")?.toString().trim();
+  const hargaDiskon = diskonRaw ? parseInt(diskonRaw, 10) : null;
+  const badgeRaw = formData.get("badge")?.toString().trim();
+  const badge = BADGE_VALID.includes(badgeRaw) ? badgeRaw : null;
 
   if (!nama || isNaN(harga) || harga < 0) {
     return { error: "Nama dan harga produk (minimal 0) wajib diisi." };
+  }
+
+  if (hargaDiskon !== null && (isNaN(hargaDiskon) || hargaDiskon < 0 || hargaDiskon >= harga)) {
+    return { error: "Harga diskon harus berupa angka dan lebih kecil dari harga normal." };
   }
 
   // Jika file foto diunggah, simpan ke Supabase Storage pada bucket "product"
@@ -137,6 +147,8 @@ export async function createProductAction(prevState, formData) {
       foto_url: foto_url || null,
       deskripsi: deskripsi || null,
       stok: stok !== null && !isNaN(stok) ? stok : null,
+      harga_diskon: hargaDiskon,
+      badge,
     },
   ]);
 
@@ -175,9 +187,17 @@ export async function updateProductAction(prevState, formData) {
   const fotoFile = formData.get("foto_file");
   const stokRaw = formData.get("stok")?.toString().trim();
   const stok = stokRaw !== "" && stokRaw != null ? parseInt(stokRaw, 10) : null;
+  const diskonRaw = formData.get("harga_diskon")?.toString().trim();
+  const hargaDiskon = diskonRaw ? parseInt(diskonRaw, 10) : null;
+  const badgeRaw = formData.get("badge")?.toString().trim();
+  const badge = BADGE_VALID.includes(badgeRaw) ? badgeRaw : null;
 
   if (!nama || isNaN(harga) || harga < 0) {
     return { error: "Nama dan harga produk (minimal 0) wajib diisi." };
+  }
+
+  if (hargaDiskon !== null && (isNaN(hargaDiskon) || hargaDiskon < 0 || hargaDiskon >= harga)) {
+    return { error: "Harga diskon harus berupa angka dan lebih kecil dari harga normal." };
   }
 
   // Jika file foto baru diunggah, simpan ke Supabase Storage pada bucket "product"
@@ -226,6 +246,8 @@ export async function updateProductAction(prevState, formData) {
       foto_url: foto_url || null,
       deskripsi: deskripsi || null,
       stok: stok !== null && !isNaN(stok) ? stok : null,
+      harga_diskon: hargaDiskon,
+      badge,
     })
     .eq("id", id);
 

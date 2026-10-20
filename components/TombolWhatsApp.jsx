@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toko } from "@/lib/toko";
-import { formatRupiah } from "@/lib/format";
+import { formatRupiah, hargaAktif } from "@/lib/format";
 
 export default function TombolWhatsApp({ produk }) {
   if (!produk) return null;
@@ -13,16 +13,17 @@ export default function TombolWhatsApp({ produk }) {
   const isHabis = produk.stok === 0;
 
   const jumlahAngka = Math.max(1, Number(jumlah) || 1);
-  const hargaTotal = produk.harga * jumlahAngka;
+  const hargaSatuan = hargaAktif(produk);
+  const hargaTotal = hargaSatuan * jumlahAngka;
 
   let pesan = `Halo, saya mau pesan ${produk.nama}`;
   if (varian.trim()) {
     pesan += ` (varian: ${varian.trim()})`;
   }
   if (jumlahAngka > 1) {
-    pesan += ` dengan jumlah ${jumlahAngka} pcs dan total harga ${formatRupiah(hargaTotal)} (satuan ${formatRupiah(produk.harga)})`;
+    pesan += ` dengan jumlah ${jumlahAngka} pcs dan total harga ${formatRupiah(hargaTotal)} (satuan ${formatRupiah(hargaSatuan)})`;
   } else {
-    pesan += ` dengan harga ${formatRupiah(produk.harga)}`;
+    pesan += ` dengan harga ${formatRupiah(hargaSatuan)}`;
   }
   pesan += ".";
 

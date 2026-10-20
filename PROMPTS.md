@@ -337,9 +337,25 @@ Kriteria selesai:
 **Perbaikan:**
 Tidak ada perbaikan.
 
+## US-20 Harga coret dan badge
 
+**Prompt:**
+Sebagai pengunjung, saya ingin melihat harga diskon dan label produk, supaya saya tahu mana yang sedang promo atau baru.
 
+Bernilai 5 poin.
 
+Kriteria selesai:
 
+- Produk bisa punya harga diskon, dan harga normal tampil dicoret di kartu dan halaman detail. (3 poin)
+- Badge "Baru" atau "Terlaris" tampil berdasarkan data produk. (2 poin)
 
+**Hasil:**
+- `docs/schema.sql` bagian 6: kolom `harga_diskon integer` (nullable) dan `badge text` (nullable, hanya `Baru` atau `Terlaris`). Jalankan bagian ini di Supabase SQL Editor sebelum mengetes.
+- `lib/format.js`: helper `hargaAktif` dan `adaDiskon`. Diskon hanya berlaku jika terisi dan lebih kecil dari harga normal.
+- Komponen baru `components/HargaProduk.jsx` (harga aktif + harga normal dicoret) dan `components/BadgeProduk.jsx`, dipakai di `KartuProduk.jsx` dan `app/produk/[id]/page.jsx`.
+- `components/FormProduk.jsx`: input harga diskon dan pilihan badge.
+- `app/admin/actions.js`: create dan update menyimpan `harga_diskon` dan `badge`. Server menolak diskon yang tidak lebih kecil dari harga, dan nilai badge di luar daftar dijadikan kosong. Pemeriksaan login tidak berubah.
+- `components/TombolWhatsApp.jsx`: pesan WhatsApp dan total memakai harga diskon.
 
+**Perbaikan:**
+Tidak ada perbaikan.

@@ -94,3 +94,14 @@ where not exists (select 1 from public.produk where deskripsi like 'Contoh untuk
 -- NULL berarti stok tidak dilacak; 0 berarti habis; angka positif berarti tersedia.
 alter table public.produk
   add column if not exists stok integer default null check (stok is null or stok >= 0);
+-- 6. Harga diskon dan badge untuk US-20 (Harga coret dan badge)
+-- Jalankan ini jika kolom belum ada di tabel produk.
+-- harga_diskon NULL berarti tidak ada diskon; jika terisi harus lebih kecil dari harga.
+-- badge NULL berarti tanpa label; nilai yang diizinkan: 'Baru' atau 'Terlaris'.
+alter table public.produk
+  add column if not exists harga_diskon integer default null check (harga_diskon is null or harga_diskon >= 0);
+alter table public.produk
+  add column if not exists badge text default null;
+alter table public.produk drop constraint if exists produk_badge_check;
+alter table public.produk
+  add constraint produk_badge_check check (badge is null or badge in ('Baru', 'Terlaris'));
