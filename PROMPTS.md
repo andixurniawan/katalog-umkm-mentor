@@ -924,3 +924,17 @@ Tidak ada perbaikan.
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## Perbaikan: service worker untuk US-13 PWA
+
+**Prompt:**
+[SENDIRI] Manifest dan ikon sudah ada, tetapi tidak ada service worker, jadi syarat "katalog bisa di-install" di sebagian browser belum terpenuhi.
+
+**Hasil:**
+- `public/sw.js` (baru): pindah halaman memakai jaringan dulu dan menampilkan `public/offline.html` bila koneksi putus; ikon dari cache; `/admin` dan permintaan non-GET tidak pernah disentuh. Data katalog tidak di-cache sehingga tidak basi.
+- `components/DaftarkanSw.jsx` (baru) mendaftarkannya dari `app/layout.jsx`, hanya saat produksi supaya tidak mengganggu `next dev`.
+- `next.config.mjs`: header `Cache-Control: no-cache` untuk `/sw.js` supaya pembaruan service worker langsung terbaca.
+- Diuji pada build produksi: `/sw.js` (200, JavaScript), `/offline.html` (200), manifest tertaut di `<head>`. Uji pasang ke layar HP perlu dilakukan di perangkat setelah deploy (HTTPS).
+
+**Perbaikan:**
+Tidak ada perbaikan.

@@ -8,6 +8,7 @@ import { BandingkanProvider } from "@/components/BandingkanProvider";
 // Dijalankan sebelum halaman tampil: pakai pilihan tersimpan, kalau belum ada ikuti pengaturan perangkat.
 const skripTema = `try{var t=localStorage.getItem("tema");if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.dataset.theme=t}catch(e){}`;
 import { ambilToko } from "@/lib/pengaturan-toko";
+import DaftarkanSw from "@/components/DaftarkanSw";
 import { TokoProvider } from "@/components/TokoProvider";
 import { alamatSitus } from "@/lib/situs";
 
@@ -52,6 +53,7 @@ export default async function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-title" content={toko.nama} />
       </head>
       <body className="flex min-h-screen flex-col font-sans antialiased">
+        <DaftarkanSw />
         <TokoProvider toko={toko}>
           <KeranjangProvider>
             <FavoritProvider>

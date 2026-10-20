@@ -4,6 +4,18 @@ const nextConfig = {
   experimental: { serverActions: { bodySizeLimit: "3mb" } },
   // Supaya deploy tidak gagal hanya karena error tipe kecil selama workshop.
   typescript: { ignoreBuildErrors: true },
+  async headers() {
+    return [
+      {
+        // Browser harus selalu memeriksa versi terbaru service worker.
+        source: "/sw.js",
+        headers: [
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+        ],
+      },
+    ];
+  },
   async rewrites() {
     return [
       {
