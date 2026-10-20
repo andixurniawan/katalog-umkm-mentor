@@ -510,3 +510,23 @@ Kriteria selesai:
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-28 Halaman 404 dan loading kustom
+
+**Prompt:**
+Sebagai pengunjung, saya ingin pesan yang ramah saat halaman tidak ada atau sedang dimuat.
+
+Bernilai 5 poin.
+
+Kriteria selesai:
+
+- Ada `not-found.jsx` kustom dengan tautan kembali ke beranda. (3 poin)
+- Ada `loading.jsx` atau skeleton di halaman yang mengambil data. (2 poin)
+
+**Hasil:**
+- `app/not-found.jsx` sudah ada; tombolnya diubah menjadi "Kembali ke beranda" (menuju `/`). Dipakai juga oleh `notFound()` di detail produk dan halaman yang tidak dikenal.
+- `components/Skeleton.jsx`: kotak berdenyut (animasi dimatikan jika perangkat meminta `prefers-reduced-motion`).
+- `app/loading.jsx` (grid kartu untuk beranda), `app/produk/[id]/loading.jsx` (foto + info produk), `app/admin/loading.jsx` (daftar baris). Masing-masing memakai `role="status"` dan teks untuk pembaca layar.
+
+**Perbaikan:**
+Tidak ada perbaikan.
