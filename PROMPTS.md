@@ -901,3 +901,26 @@ Sebagai pengunjung, saya ingin bertanya tentang produk, supaya saya mendapat jaw
 
 **Perbaikan:**
 - Batas waktu awal 20 detik terlalu pendek untuk gateway; diubah ke 30 detik.
+
+## Perbaikan: status 404 sungguhan untuk halaman tidak ditemukan
+
+**Prompt:**
+[SENDIRI] Dari hasil uji ulang: `/produk/99999` menampilkan halaman "tidak ditemukan" tetapi status HTTP-nya 200. Perbaiki supaya status 404.
+
+**Hasil:**
+- Penyebabnya `app/loading.jsx` di root: Next.js mengirim respons (status 200) sebelum `notFound()` dijalankan. `app/loading.jsx` dipindah ke grup rute `app/(beranda)/` bersama `page.jsx`, jadi skeleton hanya untuk beranda, sedangkan `app/produk/[id]/loading.jsx` dihapus. `app/admin/loading.jsx` tetap ada (US-28).
+- Diuji pada build produksi: `/produk/99999`, `/produk/abc`, `/kategori/xx`, `/bandingkan?a=1&b=99999`, dan `/halaman-ngawur` kini 404; `/`, `/produk/1`, dan `/tentang` tetap 200.
+
+**Perbaikan:**
+Tidak ada perbaikan.
+
+## Perbaikan: `/?halaman=99` di katalog publik
+
+**Prompt:**
+[SENDIRI] Nomor halaman yang melebihi jumlah halaman di beranda membuat PostgREST membalas PGRST103 dan katalog menampilkan error.
+
+**Hasil:**
+`app/(beranda)/page.jsx` sekarang menangkap `PGRST103`, menghitung total produk dengan filter yang sama, lalu mengarahkan ke halaman terakhir (filter `q`, `kategori`, `urutan` tetap terbawa). Diuji: `/?halaman=99` diarahkan ke `/`; `/?halaman=99&q=kopi` juga.
+
+**Perbaikan:**
+Tidak ada perbaikan.

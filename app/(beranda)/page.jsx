@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import KartuProduk from "@/components/KartuProduk";
 import Input from "@/components/Input";
 import Tombol from "@/components/Tombol";
@@ -32,6 +33,7 @@ export default async function HalamanKatalog({ searchParams }) {
   let pesanError = null;
   let totalProduk = 0;
   let totalHalaman = 1;
+  let halamanTerakhir = null;
 
   if (!supabase) {
     pesanError =
@@ -69,7 +71,7 @@ export default async function HalamanKatalog({ searchParams }) {
 
     // Urutan bawaan mengikuti kolom `urutan` (US-47). `denganUrutan = false` dipakai sebagai cadangan
     // bila kolom itu belum dibuat di database, supaya katalog tetap tampil.
-    const ambilProduk = (denganUrutan) => {
+    const ambilProduk = (denganUrutan, awal = dari, akhir = sampai) => {
       let query = supabase.from("produk").select("*", { count: "exact" }).eq("aktif", true);
 
       if (kategoriTerpilih) {
@@ -91,7 +93,7 @@ export default async function HalamanKatalog({ searchParams }) {
         query = query.order("id", { ascending: true });
       }
 
-      return query.range(dari, sampai);
+      return query.range(awal, akhir);
     };
 
     let { data, count, error } = await ambilProduk(true);
@@ -99,7 +101,12 @@ export default async function HalamanKatalog({ searchParams }) {
       ({ data, count, error } = await ambilProduk(false));
     }
 
-    if (error) {
+    // Nomor halaman di URL melebihi jumlah halaman: PostgREST membalas PGRST103 (range tidak terpenuhi).
+    // Hitung total lalu arahkan ke halaman terakhir (dilakukan setelah buatTautan didefinisikan).
+    if (error?.code === "PGRST103") {
+      const { count: total } = await ambilProduk(false, 0, 0);
+      halamanTerakhir = Math.max(1, Math.ceil((total || 0) / perPage));
+    } else if (error) {
       console.error("Gagal mengambil data produk dari Supabase:", error);
       pesanError = "Gagal mengambil data produk dari database.";
     } else {
@@ -145,6 +152,10 @@ export default async function HalamanKatalog({ searchParams }) {
 
     const qs = params.toString();
     return qs ? `/?${qs}` : "/";
+  }
+
+  if (halamanTerakhir) {
+    redirect(buatTautan({ halamanBaru: halamanTerakhir }));
   }
 
   const adaFilter = Boolean(kataKunci || kategoriTerpilih || urutan || halaman > 1);

@@ -1,6 +1,7 @@
 import Skeleton from "@/components/Skeleton";
 
-// Tampil saat beranda (dan halaman lain tanpa loading sendiri) mengambil data dari database.
+// Tampil saat beranda mengambil data dari database. Sengaja hanya untuk beranda (grup rute): loading.jsx di
+// root membuat respons dikirim sebelum notFound() dijalankan, sehingga halaman "tidak ditemukan" berstatus 200.
 export default function Loading() {
   return (
     <div role="status" aria-live="polite" className="py-10 sm:py-14">
