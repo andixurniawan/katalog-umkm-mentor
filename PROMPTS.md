@@ -842,3 +842,18 @@ Sebagai admin, saya ingin memasukkan banyak produk sekaligus, supaya tidak menge
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-47 Atur urutan tampil produk
+
+**Prompt:**
+Sebagai admin, saya ingin mengatur urutan produk, supaya produk unggulan tampil lebih dulu. Bernilai 10 poin. Kriteria: produk punya kolom urutan di database (4); admin bisa menaikkan dan menurunkan urutan (3); katalog publik mengikuti urutan tersebut (3).
+
+**Hasil:**
+- `docs/schema.sql` bagian 15: kolom `produk.urutan` (bigint, not null) diisi sama dengan `id` untuk produk lama, dengan default dari sequence supaya produk baru otomatis di urutan paling akhir. **Harus dijalankan di Supabase SQL Editor.**
+- `geserProdukAction` di `app/admin/actions.js`: cek login, lalu menukar nilai `urutan` produk dengan tetangga langsung di atas/bawahnya; menolak bila sudah paling atas/bawah.
+- `components/TombolUrutan.jsx` (panah ↑ ↓, nonaktif di ujung daftar) dan kolom "Urutan" di `components/TabelProduk.jsx`. Panah disembunyikan saat sedang mencari karena tetangga di hasil cari belum tentu tetangga sebenarnya.
+- Katalog publik (`app/page.jsx`) memakai `urutan` untuk urutan "Bawaan"; urutan termurah/termahal/terbaru tidak berubah. Admin juga diurutkan dengan `urutan`.
+- Cadangan: jika kolom `urutan` belum ada (SQL belum dijalankan), kedua halaman otomatis mengulang query tanpa `urutan`, jadi katalog tidak rusak (diuji: beranda tetap menampilkan produk).
+
+**Perbaikan:**
+Tidak ada perbaikan.

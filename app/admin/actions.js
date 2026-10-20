@@ -661,3 +661,48 @@ export async function imporProdukAction(prevState, formData) {
 
   return { ringkasan: { berhasil, gagal: hasil.gagal, total: hasil.valid.length + hasil.gagal.length }, waktu: Date.now() };
 }
+
+// ---- Urutan tampil produk (US-47) ----
+
+export async function geserProdukAction(prevState, formData) {
+  const { supabase } = await periksaAdmin();
+  if (!supabase) return { error: "Anda harus login terlebih dahulu." };
+
+  const id = formData.get("id")?.toString() || "";
+  const naik = formData.get("arah") === "naik";
+  if (!id) return { error: "ID produk tidak valid." };
+
+  const { data: saatIni, error: errorBaca } = await supabase
+    .from("produk")
+    .select("id, urutan")
+    .eq("id", id)
+    .maybeSingle();
+  if (errorBaca || !saatIni) {
+    return { error: "Produk tidak ditemukan atau kolom urutan belum dibuat (docs/schema.sql bagian 15)." };
+  }
+
+  // Tetangga langsung di urutan global: yang tepat di atas (naik) atau di bawah (turun).
+  const { data: tetangga } = await supabase
+    .from("produk")
+    .select("id, urutan")
+    .filter("urutan", naik ? "lt" : "gt", saatIni.urutan)
+    .order("urutan", { ascending: !naik })
+    .limit(1)
+    .maybeSingle();
+  if (!tetangga) return { error: naik ? "Produk sudah paling atas." : "Produk sudah paling bawah." };
+
+  // Tukar nilai urutan keduanya.
+  const hasil = await Promise.all([
+    supabase.from("produk").update({ urutan: tetangga.urutan }).eq("id", saatIni.id),
+    supabase.from("produk").update({ urutan: saatIni.urutan }).eq("id", tetangga.id),
+  ]);
+  const gagal = hasil.find((h) => h.error);
+  if (gagal) {
+    console.error("Gagal menggeser produk:", gagal.error.message);
+    return { error: "Gagal mengubah urutan: " + gagal.error.message };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+  return { success: true };
+}

@@ -64,40 +64,40 @@ export default async function HalamanKatalog({ searchParams }) {
     }
 
     // Query produk dengan filter kategori, pencarian nama, urutan, dan paginasi langsung di query database
-    let query = supabase
-      .from("produk")
-      .select("*", { count: "exact" })
-      .eq("aktif", true);
+    const dari = (halaman - 1) * perPage;
+    const sampai = dari + perPage - 1;
 
-    if (kategoriTerpilih) {
-      query = query.ilike("kategori", kategoriTerpilih);
+    // Urutan bawaan mengikuti kolom `urutan` (US-47). `denganUrutan = false` dipakai sebagai cadangan
+    // bila kolom itu belum dibuat di database, supaya katalog tetap tampil.
+    const ambilProduk = (denganUrutan) => {
+      let query = supabase.from("produk").select("*", { count: "exact" }).eq("aktif", true);
+
+      if (kategoriTerpilih) {
+        query = query.ilike("kategori", kategoriTerpilih);
+      }
+
+      if (kataKunci) {
+        query = query.ilike("nama", `%${kataKunci}%`);
+      }
+
+      if (urutan === "termurah") {
+        query = query.order("harga", { ascending: true }).order("id", { ascending: true });
+      } else if (urutan === "termahal") {
+        query = query.order("harga", { ascending: false }).order("id", { ascending: true });
+      } else if (urutan === "terbaru") {
+        query = query.order("created_at", { ascending: false }).order("id", { ascending: false });
+      } else {
+        if (denganUrutan) query = query.order("urutan", { ascending: true });
+        query = query.order("id", { ascending: true });
+      }
+
+      return query.range(dari, sampai);
+    };
+
+    let { data, count, error } = await ambilProduk(true);
+    if (error && /urutan/i.test(error.message || "")) {
+      ({ data, count, error } = await ambilProduk(false));
     }
-
-    if (kataKunci) {
-      query = query.ilike("nama", `%${kataKunci}%`);
-    }
-
-    if (urutan === "termurah") {
-      query = query
-        .order("harga", { ascending: true })
-        .order("id", { ascending: true });
-    } else if (urutan === "termahal") {
-      query = query
-        .order("harga", { ascending: false })
-        .order("id", { ascending: true });
-    } else if (urutan === "terbaru") {
-      query = query
-        .order("created_at", { ascending: false })
-        .order("id", { ascending: false });
-    } else {
-      query = query.order("id", { ascending: true });
-    }
-
-    // Pembatasan jumlah dilakukan langsung di database menggunakan .range()
-    const from = (halaman - 1) * perPage;
-    const to = from + perPage - 1;
-
-    const { data, count, error } = await query.range(from, to);
 
     if (error) {
       console.error("Gagal mengambil data produk dari Supabase:", error);

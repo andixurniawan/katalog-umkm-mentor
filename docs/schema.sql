@@ -299,3 +299,20 @@ create policy "admin_baca_log" on public.log_aktivitas
   for select to authenticated using (true);
 create policy "admin_tambah_log" on public.log_aktivitas
   for insert to authenticated with check (true);
+
+-- 15. Urutan tampil produk (US-47)
+-- Angka lebih kecil tampil lebih dulu di katalog. Produk lama diurutkan sesuai id,
+-- produk baru otomatis ditaruh paling akhir lewat sequence.
+create sequence if not exists public.produk_urutan_seq;
+
+alter table public.produk add column if not exists urutan bigint;
+update public.produk set urutan = id where urutan is null;
+
+select setval('public.produk_urutan_seq', greatest((select coalesce(max(urutan), 0) from public.produk), 1));
+
+alter table public.produk alter column urutan set default nextval('public.produk_urutan_seq');
+alter table public.produk alter column urutan set not null;
+
+grant usage, select on sequence public.produk_urutan_seq to authenticated, service_role;
+
+create index if not exists produk_urutan_idx on public.produk (urutan, id);

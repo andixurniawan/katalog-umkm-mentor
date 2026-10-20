@@ -29,17 +29,25 @@ export default async function HalamanAdmin({ searchParams }) {
   // Pencarian dan pembatasan jumlah dilakukan di query database. % dan _ dari pengguna
   // di-escape supaya dicari apa adanya, bukan sebagai wildcard.
   const dari = (halaman - 1) * PER_HALAMAN;
-  let queryDaftar = supabase.from("produk").select("*", { count: "exact" });
-  if (kataKunci) {
-    queryDaftar = queryDaftar.ilike("nama", `%${kataKunci.replace(/[\\%_]/g, "\\$&")}%`);
-  }
-  queryDaftar = queryDaftar.order("id", { ascending: true }).range(dari, dari + PER_HALAMAN - 1);
+  const bangunDaftar = (denganUrutan) => {
+    let q = supabase.from("produk").select("*", { count: "exact" });
+    if (kataKunci) {
+      q = q.ilike("nama", `%${kataKunci.replace(/[\\%_]/g, "\\$&")}%`);
+    }
+    if (denganUrutan) q = q.order("urutan", { ascending: true });
+    return q.order("id", { ascending: true }).range(dari, dari + PER_HALAMAN - 1);
+  };
 
   // Daftar produk dan data ringkasan diambil bersamaan dari database.
-  const [
-    { data: daftarProduk, count, error },
-    { data: dataKategori, error: errorRingkasan },
-  ] = await Promise.all([queryDaftar, supabase.from("produk").select("kategori")]);
+  const [hasilDaftar, { data: dataKategori, error: errorRingkasan }] = await Promise.all([
+    bangunDaftar(true),
+    supabase.from("produk").select("kategori"),
+  ]);
+  // Kolom `urutan` (US-47) belum dibuat: tampilkan daftar tanpa pengurutan itu.
+  const urutanBelumAda = hasilDaftar.error && /urutan/i.test(hasilDaftar.error.message || "");
+  const { data: daftarProduk, count, error } = urutanBelumAda
+    ? await bangunDaftar(false)
+    : hasilDaftar;
 
   // Lima produk dengan klik terbanyak, dihitung di database lewat view klik_whatsapp_per_produk.
   const { data: dataKlik, error: errorKlik } = await supabase
@@ -162,7 +170,15 @@ export default async function HalamanAdmin({ searchParams }) {
               </>
             )}
           </p>
-          <TabelProduk daftarProduk={produkList} />
+          <TabelProduk
+            daftarProduk={produkList}
+            urutan={!kataKunci && produkList[0]?.urutan !== undefined ? { mulai: dari, total: totalHasil } : null}
+          />
+          {!kataKunci && produkList[0]?.urutan !== undefined && (
+            <p className="text-xs text-teks-lembut">
+              Tombol panah mengatur urutan produk di katalog publik (urutan bawaan). Pencarian menyembunyikan panah.
+            </p>
+          )}
           <Paginasi
             halaman={halaman}
             totalHalaman={totalHalaman}
