@@ -364,3 +364,50 @@ export async function deleteCategoryAction(prevState, formData) {
   segarkanHalamanKategori();
   return { success: `Kategori "${kategori.nama}" dihapus.`, waktu: Date.now() };
 }
+
+// ---- Moderasi ulasan (US-39) ----
+
+export async function toggleUlasanAction(prevState, formData) {
+  const { supabase } = await periksaAdmin();
+  if (!supabase) return { error: "Anda harus login terlebih dahulu." };
+
+  const id = formData.get("id");
+  if (!id) return { error: "ID ulasan tidak valid." };
+
+  // Nilai tujuan dikirim dari form, jadi klik ganda tidak membalik status dua kali.
+  const tampil = formData.get("tampil") === "true";
+  const { data, error } = await supabase
+    .from("ulasan")
+    .update({ tampil })
+    .eq("id", id)
+    .select("produk_id")
+    .maybeSingle();
+
+  if (error) {
+    console.error("Gagal mengubah status ulasan:", error.message);
+    return { error: "Gagal mengubah status ulasan: " + error.message };
+  }
+  if (!data) return { error: "Ulasan tidak ditemukan." };
+
+  revalidatePath("/admin/ulasan");
+  revalidatePath(`/produk/${data.produk_id}`);
+  return { success: true };
+}
+
+export async function deleteUlasanAction(formData) {
+  const { supabase } = await periksaAdmin();
+  if (!supabase) return;
+
+  const id = formData.get("id");
+  if (!id) return;
+
+  const { data, error } = await supabase.from("ulasan").delete().eq("id", id).select("produk_id").maybeSingle();
+
+  if (error) {
+    console.error("Gagal menghapus ulasan:", error.message);
+    return;
+  }
+
+  revalidatePath("/admin/ulasan");
+  if (data) revalidatePath(`/produk/${data.produk_id}`);
+}

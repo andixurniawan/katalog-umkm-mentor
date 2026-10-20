@@ -730,3 +730,17 @@ Sebagai pengunjung, saya ingin memberi ulasan dan rating, supaya pembeli lain te
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-39 Moderasi ulasan di admin
+
+**Prompt:**
+Sebagai admin, saya ingin mengelola ulasan, supaya ulasan yang tidak pantas tidak tampil. Bernilai 10 poin. Kriteria: halaman admin menampilkan semua ulasan (4); admin bisa menyembunyikan atau menghapus ulasan, login diperiksa di server (3); ulasan yang disembunyikan tidak tampil di publik dan tidak dihitung di rata-rata (3).
+
+**Hasil:**
+- `app/admin/ulasan/page.jsx` (baru, di bawah `/admin` sehingga diproteksi `proxy.js` dan juga memeriksa login sendiri): daftar semua ulasan (maks 200, terbaru dulu) dengan nama produk, rating, tanggal, dan penanda "Disembunyikan".
+- `app/admin/actions.js`: `toggleUlasanAction` (sembunyikan/tampilkan; nilai tujuan dikirim dari form) dan `deleteUlasanAction`, keduanya memakai `periksaAdmin()`. Halaman produk terkait ikut di-revalidate.
+- `components/BarisUlasan.jsx` (baru) dan tautan "Ulasan" di `components/NavAdmin.jsx`.
+- Halaman publik dan rata-rata hanya membaca `tampil = true` (`lib/ulasan.js`, US-38), jadi ulasan tersembunyi otomatis tidak tampil dan tidak dihitung. Membutuhkan tabel `ulasan` dari `docs/schema.sql` bagian 10.
+
+**Perbaikan:**
+Tidak ada perbaikan.
