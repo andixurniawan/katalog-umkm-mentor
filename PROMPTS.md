@@ -813,3 +813,17 @@ Sebagai admin, saya ingin menambah admin lain, supaya pengelolaan toko bisa diba
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-45 Log aktivitas admin
+
+**Prompt:**
+Sebagai admin, saya ingin melihat riwayat perubahan, supaya tahu siapa mengubah apa. Bernilai 10 poin. Kriteria: tambah, ubah, dan hapus produk mencatat log: siapa, aksi, dan kapan (4); halaman admin menampilkan 50 log terakhir (3); tanpa login log tidak bisa diakses (3).
+
+**Hasil:**
+- `docs/schema.sql` bagian 14: tabel `log_aktivitas` (`admin_email`, `aksi`, `target`, `created_at`) dengan RLS: admin yang login hanya boleh menambah dan membaca (tidak ada update/delete, jadi log tidak bisa diubah dari aplikasi). **Harus dijalankan di Supabase SQL Editor.**
+- `lib/log-aktivitas.js` (baru): `catatLog()` memakai sesi admin yang sedang login. Kegagalan mencatat hanya ditulis ke log server dan tidak menggagalkan aksi utama.
+- `app/admin/actions.js`: `createProductAction` ("Tambah produk"), `updateProductAction` ("Ubah produk"), dan `deleteProductAction` ("Hapus produk", nama dibaca sebelum dihapus) mencatat email admin, aksi, serta `#id nama`.
+- `app/admin/log/page.jsx` (baru): memeriksa login lalu menampilkan 50 log terbaru (waktu, admin, aksi, target) di tabel. Tautan "Log" di `NavAdmin`; tanpa login, `proxy.js` mengalihkan ke halaman login dan RLS menolak pembacaan oleh pengunjung.
+
+**Perbaikan:**
+Tidak ada perbaikan.

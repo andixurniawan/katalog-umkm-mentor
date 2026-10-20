@@ -6,6 +6,7 @@ import { createServerAuthClient, createPublicClient } from "@/lib/supabase/serve
 import { unggahFoto } from "@/lib/unggah-foto";
 import { validasiProduk } from "@/lib/validasi-produk";
 import { buatDeskripsiAi } from "@/lib/deskripsi-ai";
+import { catatLog } from "@/lib/log-aktivitas";
 import { validasiToko } from "@/lib/validasi-toko";
 import { TAG_TOKO } from "@/lib/pengaturan-toko";
 import { validasiBanner } from "@/lib/validasi-banner";
@@ -102,14 +103,18 @@ export async function createProductAction(prevState, formData) {
     foto_url = foto_url ? `${foto_url},${hasil.url}` : hasil.url;
   }
 
-  const { error } = await supabaseAuth.from("produk").insert([
-    { ...data, foto_url },
-  ]);
+  const { data: baru, error } = await supabaseAuth
+    .from("produk")
+    .insert([{ ...data, foto_url }])
+    .select("id")
+    .single();
 
   if (error) {
     console.error("Gagal menambah produk:", error.message);
     return { error: "Gagal menyimpan produk: " + error.message, values };
   }
+
+  await catatLog(supabaseAuth, user, "Tambah produk", `#${baru?.id} ${data.nama}`);
 
   revalidatePath("/admin");
   revalidatePath("/");
@@ -160,6 +165,8 @@ export async function updateProductAction(prevState, formData) {
     return { error: "Gagal menyimpan perubahan produk: " + error.message, values };
   }
 
+  await catatLog(supabaseAuth, user, "Ubah produk", `#${id} ${data.nama}`);
+
   revalidatePath("/admin");
   revalidatePath("/");
   redirect("/admin");
@@ -181,6 +188,9 @@ export async function deleteProductAction(formData) {
     return { error: "ID produk tidak valid." };
   }
 
+  // Nama dibaca dulu supaya log tetap menyebut produk yang sudah terhapus.
+  const { data: lama } = await supabaseAuth.from("produk").select("nama").eq("id", id).maybeSingle();
+
   const { error } = await supabaseAuth
     .from("produk")
     .delete()
@@ -190,6 +200,8 @@ export async function deleteProductAction(formData) {
     console.error("Gagal menghapus produk:", error.message);
     return { error: "Gagal menghapus produk: " + error.message };
   }
+
+  await catatLog(supabaseAuth, user, "Hapus produk", `#${id} ${lama?.nama ?? ""}`.trim());
 
   revalidatePath("/admin");
   revalidatePath("/");

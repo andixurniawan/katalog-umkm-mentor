@@ -277,3 +277,25 @@ create policy "admin_tambah_pengaturan_toko" on public.pengaturan_toko
   for insert to authenticated with check (true);
 create policy "admin_ubah_pengaturan_toko" on public.pengaturan_toko
   for update to authenticated using (true) with check (true);
+
+-- 14. Log aktivitas admin (US-45)
+-- Dicatat dari server memakai sesi admin yang login. Hanya boleh ditambah dan dibaca (tanpa ubah/hapus).
+create table if not exists public.log_aktivitas (
+  id bigint generated always as identity primary key,
+  admin_email text not null,
+  aksi text not null,
+  target text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists log_aktivitas_waktu_idx on public.log_aktivitas (created_at desc);
+
+alter table public.log_aktivitas enable row level security;
+
+drop policy if exists "admin_baca_log" on public.log_aktivitas;
+drop policy if exists "admin_tambah_log" on public.log_aktivitas;
+
+create policy "admin_baca_log" on public.log_aktivitas
+  for select to authenticated using (true);
+create policy "admin_tambah_log" on public.log_aktivitas
+  for insert to authenticated with check (true);
