@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import NavAdmin from "@/components/NavAdmin";
 import TabelProduk from "@/components/TabelProduk";
+import TerlarisAdmin from "@/components/TerlarisAdmin";
 import RingkasanAdmin from "@/components/RingkasanAdmin";
 import Tombol from "@/components/Tombol";
 import Input from "@/components/Input";
@@ -39,6 +40,22 @@ export default async function HalamanAdmin({ searchParams }) {
     { data: daftarProduk, count, error },
     { data: dataKategori, error: errorRingkasan },
   ] = await Promise.all([queryDaftar, supabase.from("produk").select("kategori")]);
+
+  // Lima produk dengan klik terbanyak, dihitung di database lewat view klik_whatsapp_per_produk.
+  const { data: dataKlik, error: errorKlik } = await supabase
+    .from("klik_whatsapp_per_produk")
+    .select("produk_id, jumlah")
+    .order("jumlah", { ascending: false })
+    .limit(5);
+  let terlaris = [];
+  if (!errorKlik && dataKlik?.length) {
+    const { data: dataNama } = await supabase
+      .from("produk")
+      .select("id, nama")
+      .in("id", dataKlik.map((k) => k.produk_id));
+    const namaProduk = new Map((dataNama || []).map((p) => [p.id, p.nama]));
+    terlaris = dataKlik.map((k) => ({ id: k.produk_id, nama: namaProduk.get(k.produk_id) || `Produk #${k.produk_id}`, jumlah: k.jumlah }));
+  }
 
   function buatTautan(nomor) {
     const params = new URLSearchParams();
@@ -89,6 +106,7 @@ export default async function HalamanAdmin({ searchParams }) {
       ) : (
         <RingkasanAdmin total={dataKategori?.length ?? 0} perKategori={perKategori} />
       )}
+      <TerlarisAdmin daftar={terlaris} error={Boolean(errorKlik)} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-extrabold">Produk</h1>
         <div className="flex flex-wrap gap-2">

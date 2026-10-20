@@ -758,3 +758,15 @@ Sebagai pemilik toko, saya ingin tahu produk mana yang sering dipesan, supaya sa
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-41 Produk terlaris di dashboard
+
+**Prompt:**
+Sebagai admin, saya ingin melihat produk yang paling sering dipesan, supaya saya tahu produk andalan. Bernilai 10 poin. Kriteria: dashboard menampilkan 5 produk dengan klik pesan terbanyak (4); angka dihitung dari tabel pencatatan klik di database (3); jika belum ada data, tampil pesan yang jelas (3).
+
+**Hasil:**
+- `docs/schema.sql` bagian 11 (bersama US-40): view `klik_whatsapp_per_produk` (`security_invoker`, jadi RLS tabel tetap berlaku) yang menghitung klik per produk di database.
+- `app/admin/page.jsx`: mengambil 5 baris teratas dari view itu (urut jumlah turun) lalu nama produknya, dan meneruskan ke `components/TerlarisAdmin.jsx` (baru) yang menampilkan peringkat, jumlah klik, dan bilah proporsi. Tanpa data: "Belum ada data. Angka muncul setelah pengunjung mengklik tombol pesan via WhatsApp." Bila tabel/view belum dibuat: pesan arahan ke `schema.sql` bagian 11.
+
+**Perbaikan:**
+Tidak ada perbaikan.
