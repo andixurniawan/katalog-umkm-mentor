@@ -7,14 +7,7 @@ import { FavoritProvider } from "@/components/FavoritProvider";
 // Dijalankan sebelum halaman tampil: pakai pilihan tersimpan, kalau belum ada ikuti pengaturan perangkat.
 const skripTema = `try{var t=localStorage.getItem("tema");if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.dataset.theme=t}catch(e){}`;
 import { toko } from "@/lib/toko";
-
-// Alamat situs untuk membuat URL absolut di metadata (Open Graph). Di Vercel terisi otomatis;
-// untuk domain sendiri isi SITE_URL (tanpa awalan NEXT_PUBLIC_, hanya dipakai di server).
-const alamatSitus =
-  process.env.SITE_URL ||
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : "http://localhost:3000");
+import { alamatSitus } from "@/lib/situs";
 
 export const metadata = {
   metadataBase: new URL(alamatSitus),

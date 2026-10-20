@@ -490,3 +490,23 @@ Kriteria selesai:
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-27 sitemap.xml dan robots.txt
+
+**Prompt:**
+Sebagai pemilik toko, saya ingin mesin pencari menemukan semua produk, supaya toko lebih mudah ditemukan.
+
+Bernilai 5 poin.
+
+Kriteria selesai:
+
+- `sitemap.xml` dibuat dari database dan memuat halaman produk. (3 poin)
+- `robots.txt` valid dan menunjuk ke sitemap. (2 poin)
+
+**Hasil:**
+- `app/sitemap.js`: memuat beranda, `/tentang`, dan satu URL per produk dari tabel `produk` (`/produk/[id]`). Dibuat saat diminta (`force-dynamic`) supaya produk baru langsung masuk. Jika database gagal, tetap mengembalikan halaman tetap.
+- `app/robots.js`: mengizinkan semua halaman, melarang `/admin`, `/keranjang`, dan `/favorit`, dan menunjuk ke `{alamat situs}/sitemap.xml`.
+- `lib/situs.js`: alamat situs (`SITE_URL`, atau `VERCEL_PROJECT_PRODUCTION_URL`, atau localhost) dipakai bersama oleh layout, sitemap, dan robots.
+
+**Perbaikan:**
+Tidak ada perbaikan.
