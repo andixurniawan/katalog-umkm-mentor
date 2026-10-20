@@ -799,3 +799,17 @@ Sebagai admin, saya ingin mengubah data toko tanpa mengedit kode, supaya mudah d
 
 **Perbaikan:**
 Tidak ada perbaikan.
+
+## US-44 Kelola akun admin
+
+**Prompt:**
+Sebagai admin, saya ingin menambah admin lain, supaya pengelolaan toko bisa dibagi. Bernilai 15 poin. Kriteria: admin bisa menambah admin baru lewat Supabase Auth (4); daftar admin tampil di halaman admin (4); admin bisa menonaktifkan atau menghapus admin lain, tapi tidak akunnya sendiri (4); semua aksi diperiksa di server (3).
+
+**Hasil:**
+- `app/admin/akun/page.jsx` (baru): memeriksa login lalu membaca daftar akun lewat Auth Admin API (`listUsers`, memakai `SUPABASE_SECRET_KEY` hanya di server) dan menampilkan email, tanggal dibuat, login terakhir, serta penanda "Anda" dan "Nonaktif". Tautan "Akun admin" di `NavAdmin`.
+- `app/admin/actions.js`: `tambahAdminAction` (`auth.admin.createUser` dengan `email_confirm: true`; email dan password divalidasi, email kembar dilaporkan di bawah field), `ubahStatusAdminAction` (`ban_duration` `876000h` atau `none`), dan `hapusAdminAction` (`deleteUser`). Ketiganya memeriksa login di server, dan dua yang terakhir menolak `id` milik akun yang sedang login (selain tombolnya disembunyikan di UI).
+- `components/FormTambahAdmin.jsx` dan `components/BarisAdmin.jsx` (baru). Daftar dibatasi 100 akun pertama.
+- Diuji: pemanggilan `listUsers` dengan kunci server berhasil (read-only). Menambah dan menghapus akun tidak dicoba supaya tidak mengubah akun asli.
+
+**Perbaikan:**
+Tidak ada perbaikan.

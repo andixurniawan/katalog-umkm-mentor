@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath, updateTag } from "next/cache";
-import { createServerAuthClient } from "@/lib/supabase/server";
+import { createServerAuthClient, createPublicClient } from "@/lib/supabase/server";
 import { unggahFoto } from "@/lib/unggah-foto";
 import { validasiProduk } from "@/lib/validasi-produk";
 import { buatDeskripsiAi } from "@/lib/deskripsi-ai";
@@ -513,4 +513,91 @@ export async function simpanPengaturanTokoAction(prevState, formData) {
     values: { ...values, nomor_whatsapp: data.nomor_whatsapp },
     waktu: Date.now(),
   };
+}
+
+// ---- Kelola akun admin (US-44) ----
+// Memakai Supabase Auth Admin API dengan SUPABASE_SECRET_KEY, hanya dari server.
+
+async function periksaAdminDenganId() {
+  const supabase = await createServerAuthClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+  return error || !user ? { user: null } : { user };
+}
+
+const FORMAT_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export async function tambahAdminAction(prevState, formData) {
+  const { user } = await periksaAdminDenganId();
+  if (!user) return { error: "Anda harus login terlebih dahulu." };
+
+  const email = formData.get("email")?.toString().trim().toLowerCase() || "";
+  const password = formData.get("password")?.toString() || "";
+  const errors = {};
+  if (!email) errors.email = "Email wajib diisi.";
+  else if (!FORMAT_EMAIL.test(email) || email.length > 254) errors.email = "Format email tidak valid.";
+  if (password.length < 8) errors.password = "Password minimal 8 karakter.";
+  else if (password.length > 72) errors.password = "Password maksimal 72 karakter.";
+  if (Object.keys(errors).length > 0) return { error: "Periksa kembali isian yang ditandai.", errors, values: { email } };
+
+  const admin = createPublicClient();
+  if (!admin) return { error: "Gagal terhubung ke Supabase.", values: { email } };
+
+  const { error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
+  if (error) {
+    if (/already|registered|exists/i.test(error.message)) {
+      return { errors: { email: "Email ini sudah terdaftar." }, values: { email } };
+    }
+    console.error("Gagal menambah admin:", error.message);
+    return { error: "Gagal menambah admin: " + error.message, values: { email } };
+  }
+
+  revalidatePath("/admin/akun");
+  return { success: `Admin ${email} ditambahkan.`, waktu: Date.now() };
+}
+
+export async function ubahStatusAdminAction(prevState, formData) {
+  const { user } = await periksaAdminDenganId();
+  if (!user) return { error: "Anda harus login terlebih dahulu." };
+
+  const id = formData.get("id")?.toString() || "";
+  if (!id) return { error: "ID admin tidak valid." };
+  if (id === user.id) return { error: "Anda tidak bisa menonaktifkan akun sendiri." };
+
+  const admin = createPublicClient();
+  if (!admin) return { error: "Gagal terhubung ke Supabase." };
+
+  // Nilai tujuan dikirim dari form. "876000h" (sekitar 100 tahun) berarti diblokir; "none" membuka blokir.
+  const nonaktifkan = formData.get("nonaktif") === "true";
+  const { error } = await admin.auth.admin.updateUserById(id, { ban_duration: nonaktifkan ? "876000h" : "none" });
+  if (error) {
+    console.error("Gagal mengubah status admin:", error.message);
+    return { error: "Gagal mengubah status admin: " + error.message };
+  }
+
+  revalidatePath("/admin/akun");
+  return { success: true };
+}
+
+export async function hapusAdminAction(prevState, formData) {
+  const { user } = await periksaAdminDenganId();
+  if (!user) return { error: "Anda harus login terlebih dahulu." };
+
+  const id = formData.get("id")?.toString() || "";
+  if (!id) return { error: "ID admin tidak valid." };
+  if (id === user.id) return { error: "Anda tidak bisa menghapus akun sendiri." };
+
+  const admin = createPublicClient();
+  if (!admin) return { error: "Gagal terhubung ke Supabase." };
+
+  const { error } = await admin.auth.admin.deleteUser(id);
+  if (error) {
+    console.error("Gagal menghapus admin:", error.message);
+    return { error: "Gagal menghapus admin: " + error.message };
+  }
+
+  revalidatePath("/admin/akun");
+  return { success: true };
 }
